@@ -1,0 +1,69 @@
+# ============ Dependencies ============
+node_modules/
+vendor/
+frontend/node_modules/
+
+# ============ Environment & Secrets ============
+.env
+.env.local
+.env.*.local
+*.env
+
+# ============ Build Outputs ============
+dist/
+build/
+*.exe
+*.dll
+*.so
+*.dylib
+*.tar
+
+# ============ IDE & Editor ============
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ============ Logs ============
+*.log
+logs/
+
+# ============ Private Data (DO NOT COMMIT) ============
+# 公司数据库（私有数据，不公开）
+data/*.json
+data/*.sql
+data/*.ps1
+data/*.xlsx
+data/*.csv
+!data/.gitkeep
+!data/README.md
+
+# 用户上传文件
+uploads/
+
+# 数据库备份
+*.dump
+
+# ============ Docker Volumes ============
+pgdata/
+redis/
+prometheus/
+grafana/
+
+# ============ Temporary Files ============
+tmp/
+temp/
+
+# ============ Test & Coverage ============
+coverage/
+*.out
+*.test
+
+# ============ OS Generated ============
+.SDS_Store
+._*
+.Spotlight-V100
+.Trashes

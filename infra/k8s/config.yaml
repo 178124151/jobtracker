@@ -1,0 +1,18 @@
+﻿apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jobtracker-config
+data:
+  db-host: "postgres-service"
+  db-name: "jobtracker"
+  redis-addr: "redis-service:6379"
+  server-port: "8080"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jobtracker-secrets
+type: Opaque
+data:
+  db-password: cG9zdGdyZXM=  # base64 encoded "postgres"
+  jwt-secret: Y2hhbmdlLXRoaXMtc2VjcmV0  # base64 encoded "change-this-secret"

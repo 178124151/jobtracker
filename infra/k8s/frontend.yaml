@@ -1,0 +1,40 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jobtracker-frontend
+  labels:
+    app: jobtracker-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: jobtracker-frontend
+  template:
+    metadata:
+      labels:
+        app: jobtracker-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: jobtracker-frontend:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "64Mi"
+          limits:
+            cpu: "200m"
+            memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jobtracker-frontend
+spec:
+  selector:
+    app: jobtracker-frontend
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP

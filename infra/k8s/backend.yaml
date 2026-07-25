@@ -1,0 +1,63 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jobtracker-backend
+  labels:
+    app: jobtracker-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: jobtracker-backend
+  template:
+    metadata:
+      labels:
+        app: jobtracker-backend
+    spec:
+      containers:
+      - name: backend
+        image: jobtracker-backend:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: jobtracker-config
+              key: db-host
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: jobtracker-secrets
+              key: db-password
+        livenessProbe:
+          httpGet:
+            path: /api/v1/sre/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/v1/sre/health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jobtracker-backend
+spec:
+  selector:
+    app: jobtracker-backend
+  ports:
+  - port: 8080
+    targetPort: 8080
+  type: ClusterIP
