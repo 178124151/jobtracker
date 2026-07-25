@@ -1,22 +1,29 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 
-const grafanaBaseUrl = 'http://localhost:3000'
+// 动态获取 Grafana 地址（跟随当前域名）
+const grafanaBaseUrl = computed(() => {
+  const host = window.location.hostname
+  return `http://${host}:3000`
+})
+
+const prometheusBaseUrl = computed(() => {
+  const host = window.location.hostname
+  return `http://${host}:9090`
+})
+
 const dashboardUid = 'server-monitoring'
 
-// 面板配置
 const panels = ref([
-  { id: 1, title: 'CPU使用率', type: 'gauge', height: '300px' },
+  { id: 1, title: 'CPU 使用率', type: 'gauge', height: '300px' },
   { id: 2, title: '内存使用率', type: 'gauge', height: '300px' },
-  { id: 3, title: 'CPU使用趋势', type: 'timeseries', height: '400px' }
+  { id: 3, title: 'CPU 使用趋势', type: 'timeseries', height: '400px' }
 ])
 
-// 生成Grafana嵌入URL
 const getGrafanaUrl = (panelId: number) => {
-  return `${grafanaBaseUrl}/d-solo/${dashboardUid}/server-monitoring?orgId=1&panelId=${panelId}&theme=light&kiosk`
+  return `${grafanaBaseUrl.value}/d-solo/${dashboardUid}/server-monitoring?orgId=1&panelId=${panelId}&theme=light&kiosk`
 }
 
-// 系统指标
 const metrics = ref({
   uptime: '0天',
   totalRequests: '0',
@@ -24,12 +31,10 @@ const metrics = ref({
   errorRate: '0%'
 })
 
-// 告警列表
 const recentAlerts = ref([
   { id: 1, time: '暂无告警', level: 'info', message: '系统运行正常' }
 ])
 
-// 获取系统指标
 const fetchMetrics = async () => {
   try {
     const response = await fetch('/api/v1/sre/health')
@@ -51,12 +56,12 @@ onMounted(() => {
   <div class="monitor-page">
     <div class="page-header">
       <h2>链路监控</h2>
-      <a :href="grafanaBaseUrl" target="_blank" class="grafana-link">
-        打开Grafana完整面板 →
-      </a>
+      <div class="header-links">
+        <a :href="grafanaBaseUrl" target="_blank" class="grafana-link">Grafana 面板</a>
+        <a :href="prometheusBaseUrl" target="_blank" class="grafana-link secondary">Prometheus</a>
+      </div>
     </div>
 
-    <!-- 概览指标 -->
     <div class="metrics-grid">
       <div class="metric-card">
         <div class="metric-label">服务状态</div>
@@ -76,27 +81,24 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Grafana面板嵌入 -->
     <div class="grafana-section">
       <h3>服务器监控</h3>
       <div class="grafana-panels">
-        <div 
-          v-for="panel in panels" 
-          :key="panel.id" 
+        <div
+          v-for="panel in panels"
+          :key="panel.id"
           class="grafana-panel"
           :style="{ height: panel.height }"
         >
           <div class="panel-header">
             <span class="panel-title">{{ panel.title }}</span>
-            <a 
-              :href="`${grafanaBaseUrl}/d/${dashboardUid}?orgId=1&viewPanel=${panel.id}`" 
+            <a
+              :href="`${grafanaBaseUrl}/d/${dashboardUid}?orgId=1&viewPanel=${panel.id}`"
               target="_blank"
               class="panel-expand"
-            >
-              ↗
-            </a>
+            >↗</a>
           </div>
-          <iframe 
+          <iframe
             :src="getGrafanaUrl(panel.id)"
             frameborder="0"
             allowfullscreen
@@ -106,13 +108,12 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- 告警列表 -->
     <div class="alerts-section">
       <h3>最近告警</h3>
       <div class="alerts-list">
-        <div 
-          v-for="alert in recentAlerts" 
-          :key="alert.id" 
+        <div
+          v-for="alert in recentAlerts"
+          :key="alert.id"
           class="alert-item"
           :class="alert.level"
         >
@@ -126,189 +127,36 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.monitor-page {
-  width: 100%;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.page-header h2 {
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.grafana-link {
-  padding: 8px 16px;
-  background: var(--accent);
-  color: white;
-  border-radius: 8px;
-  text-decoration: none;
-  font-size: 14px;
-  transition: opacity 0.2s;
-}
-
-.grafana-link:hover {
-  opacity: 0.9;
-}
-
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.metric-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 20px;
-  text-align: center;
-}
-
-.metric-label {
-  font-size: 13px;
-  color: var(--text-3);
-  margin-bottom: 8px;
-}
-
-.metric-value {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text-1);
-}
-
-.metric-value.green {
-  color: #16a34a;
-}
-
-.grafana-section {
-  margin-bottom: 24px;
-}
-
-.grafana-section h3 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
-
-.grafana-panels {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-
-.grafana-panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.grafana-panel:first-child,
-.grafana-panel:nth-child(2) {
-  /* 仪表盘占一半宽度 */
-}
-
-.grafana-panel:last-child {
-  /* 时序图占满整行 */
-  grid-column: span 2;
-}
-
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg);
-}
-
-.panel-title {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.panel-expand {
-  color: var(--text-3);
-  text-decoration: none;
-  font-size: 16px;
-}
-
-.panel-expand:hover {
-  color: var(--accent);
-}
-
-.grafana-iframe {
-  flex: 1;
-  width: 100%;
-  min-height: 200px;
-}
-
-.alerts-section {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 20px;
-}
-
-.alerts-section h3 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
-
-.alerts-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.alert-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 14px;
-}
-
-.alert-item.info {
-  background: #eff6ff;
-  color: #2563eb;
-}
-
-.alert-item.warning {
-  background: #fef3c7;
-  color: #d97706;
-}
-
-.alert-item.error {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-.alert-time {
-  font-size: 12px;
-  opacity: 0.7;
-  min-width: 100px;
-}
-
-.alert-level {
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 12px;
-  min-width: 60px;
-}
-
-.alert-message {
-  flex: 1;
-}
+.monitor-page { width: 100%; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.page-header h2 { font-size: 20px; font-weight: 600; }
+.header-links { display: flex; gap: 8px; }
+.grafana-link { padding: 8px 16px; background: var(--accent); color: white; border-radius: 8px; text-decoration: none; font-size: 14px; }
+.grafana-link.secondary { background: var(--bg); color: var(--text-1); border: 1px solid var(--border); }
+.grafana-link:hover { opacity: 0.9; }
+.metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-align: center; }
+.metric-label { font-size: 13px; color: var(--text-3); margin-bottom: 8px; }
+.metric-value { font-size: 24px; font-weight: 700; color: var(--text-1); }
+.metric-value.green { color: #16a34a; }
+.grafana-section { margin-bottom: 24px; }
+.grafana-section h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+.grafana-panels { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.grafana-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+.grafana-panel:last-child { grid-column: span 2; }
+.panel-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg); }
+.panel-title { font-size: 14px; font-weight: 500; }
+.panel-expand { color: var(--text-3); text-decoration: none; font-size: 16px; }
+.panel-expand:hover { color: var(--accent); }
+.grafana-iframe { flex: 1; width: 100%; min-height: 200px; }
+.alerts-section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+.alerts-section h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+.alerts-list { display: flex; flex-direction: column; gap: 8px; }
+.alert-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; font-size: 14px; }
+.alert-item.info { background: #eff6ff; color: #2563eb; }
+.alert-item.warning { background: #fef3c7; color: #d97706; }
+.alert-item.error { background: #fee2e2; color: #dc2626; }
+.alert-time { font-size: 12px; opacity: 0.7; min-width: 100px; }
+.alert-level { font-weight: 600; text-transform: uppercase; font-size: 12px; min-width: 60px; }
+.alert-message { flex: 1; }
 </style>
