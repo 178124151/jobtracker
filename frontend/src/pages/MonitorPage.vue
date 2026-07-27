@@ -1,16 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 
-// 动态获取 Grafana 地址（跟随当前域名）
-const grafanaBaseUrl = computed(() => {
-  const host = window.location.hostname
-  return `http://${host}:3000`
-})
-
-const prometheusBaseUrl = computed(() => {
-  const host = window.location.hostname
-  return `http://${host}:9090`
-})
+// Grafana 通过 Nginx 代理，不需要端口
+const grafanaBaseUrl = computed(() => `${window.location.origin}/grafana`)
 
 const dashboardUid = 'server-monitoring'
 
@@ -57,8 +49,7 @@ onMounted(() => {
     <div class="page-header">
       <h2>链路监控</h2>
       <div class="header-links">
-        <a :href="grafanaBaseUrl" target="_blank" class="grafana-link">Grafana 面板</a>
-        <a :href="prometheusBaseUrl" target="_blank" class="grafana-link secondary">Prometheus</a>
+        <a :href="grafanaBaseUrl" target="_blank" class="grafana-link">打开 Grafana 面板</a>
       </div>
     </div>
 
@@ -132,7 +123,6 @@ onMounted(() => {
 .page-header h2 { font-size: 20px; font-weight: 600; }
 .header-links { display: flex; gap: 8px; }
 .grafana-link { padding: 8px 16px; background: var(--accent); color: white; border-radius: 8px; text-decoration: none; font-size: 14px; }
-.grafana-link.secondary { background: var(--bg); color: var(--text-1); border: 1px solid var(--border); }
 .grafana-link:hover { opacity: 0.9; }
 .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
 .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-align: center; }

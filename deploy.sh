@@ -1,30 +1,27 @@
 #!/bin/bash
 # JobTracker 部署脚本
-# 用法: ./deploy.sh
+# 用法: sudo bash deploy.sh
 
 set -e
 
-echo "=== JobTracker Deploy Script ==="
+echo "=== JobTracker Deploy ==="
 
-# 拉取最新代码
-echo "[1/4] Pulling latest code..."
 cd /opt/jobtracker
+
+echo "[1/4] 拉取最新代码..."
 git pull origin main
 
-# 重新构建并启动
-echo "[2/4] Rebuilding services..."
-sudo docker compose up -d --build
+echo "[2/4] 重新构建服务..."
+docker compose up -d --build
 
-# 等待服务启动
-echo "[3/4] Waiting for services..."
-sleep 10
+echo "[3/4] 等待服务启动..."
+sleep 15
 
-# 检查状态
-echo "[4/4] Checking status..."
-sudo docker compose ps
+echo "[4/4] 检查状态..."
+docker compose ps
 
 echo ""
-echo "=== Deploy Complete ==="
-echo "Frontend: http://$(curl -s ifconfig.me):5173"
-echo "Backend:  http://$(curl -s ifconfig.me):8080"
-echo "Grafana:  http://$(curl -s ifconfig.me):3000"
+echo "=== 部署完成 ==="
+echo "前端: http://$(curl -s ifconfig.me)"
+echo "监控: http://$(curl -s ifconfig.me)/grafana/"
+echo "API:  http://$(curl -s ifconfig.me)/api/"
