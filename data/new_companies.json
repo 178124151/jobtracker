@@ -1,0 +1,269 @@
+{
+    "companies":  [
+                      {
+                          "industry":  "互联网",
+                          "name":  "字节跳动",
+                          "website":  "https://jobs.bytedance.com"
+                      },
+                      {
+                          "industry":  "电商",
+                          "name":  "拼多多",
+                          "website":  "https://jobs.pinduoduo.net"
+                      },
+                      {
+                          "industry":  "金融科技",
+                          "name":  "蚂蚁集团",
+                          "website":  "https://talent.antgroup.com"
+                      },
+                      {
+                          "industry":  "短视频",
+                          "name":  "快手",
+                          "website":  "https://zhaopin.kuaishou.cn"
+                      },
+                      {
+                          "industry":  "社交",
+                          "name":  "小红书",
+                          "website":  "https://job.xiaohongshu.com"
+                      },
+                      {
+                          "industry":  "视频",
+                          "name":  "bilibili",
+                          "website":  "https://jobs.bilibili.com"
+                      },
+                      {
+                          "industry":  "视频",
+                          "name":  "爱奇艺",
+                          "website":  "https://zhaopin.iqiyi.com"
+                      },
+                      {
+                          "industry":  "电商",
+                          "name":  "得物",
+                          "website":  "https://duapp.com"
+                      },
+                      {
+                          "industry":  "电商",
+                          "name":  "苏宁",
+                          "website":  "https://zhaopin.suning.com"
+                      },
+                      {
+                          "industry":  "社交",
+                          "name":  "陌陌",
+                          "website":  "https://www.immomo.com"
+                      },
+                      {
+                          "industry":  "直播",
+                          "name":  "欢聚集团",
+                          "website":  "https://hr.yy.com"
+                      },
+                      {
+                          "industry":  "职场社交",
+                          "name":  "脉脉",
+                          "website":  "https://maimai.cn"
+                      },
+                      {
+                          "industry":  "旅游",
+                          "name":  "携程",
+                          "website":  "https://jobs.ctrip.com"
+                      },
+                      {
+                          "industry":  "旅游",
+                          "name":  "去哪儿",
+                          "website":  "https://www.qunar.com"
+                      },
+                      {
+                          "industry":  "本地生活",
+                          "name":  "58同城",
+                          "website":  "https://campus.58.com"
+                      },
+                      {
+                          "industry":  "房产",
+                          "name":  "贝壳找房",
+                          "website":  "https://zhaopin.ke.com"
+                      },
+                      {
+                          "industry":  "汽车",
+                          "name":  "汽车之家",
+                          "website":  "https://www.autohome.com.cn"
+                      },
+                      {
+                          "industry":  "房产",
+                          "name":  "自如",
+                          "website":  "https://www.ziroom.com"
+                      },
+                      {
+                          "industry":  "游戏",
+                          "name":  "米哈游",
+                          "website":  "https://www.mihoyo.com"
+                      },
+                      {
+                          "industry":  "游戏",
+                          "name":  "莉莉丝游戏",
+                          "website":  "https://www.lilith.com"
+                      },
+                      {
+                          "industry":  "游戏",
+                          "name":  "完美世界",
+                          "website":  "https://jobs.wanmei.com"
+                      },
+                      {
+                          "industry":  "游戏",
+                          "name":  "西山居",
+                          "website":  "https://www.seasunwps.com"
+                      },
+                      {
+                          "industry":  "游戏",
+                          "name":  "三七互娱",
+                          "website":  "https://37.com"
+                      },
+                      {
+                          "industry":  "游戏",
+                          "name":  "TapTap",
+                          "website":  "https://www.taptap.com"
+                      },
+                      {
+                          "industry":  "金融科技",
+                          "name":  "平安科技",
+                          "website":  "https://www.pingan.cn"
+                      },
+                      {
+                          "industry":  "金融科技",
+                          "name":  "东方财富",
+                          "website":  "https://www.eastmoney.com"
+                      },
+                      {
+                          "industry":  "金融科技",
+                          "name":  "老虎证券",
+                          "website":  "https://www.laohu8.com"
+                      },
+                      {
+                          "industry":  "工具",
+                          "name":  "迅雷",
+                          "website":  "https://www.xunlei.com"
+                      },
+                      {
+                          "industry":  "云计算",
+                          "name":  "金山云",
+                          "website":  "https://www.ksyun.com"
+                      },
+                      {
+                          "industry":  "出行",
+                          "name":  "哈啰出行",
+                          "website":  "https://www.hellobike.com"
+                      },
+                      {
+                          "industry":  "物流",
+                          "name":  "货拉拉",
+                          "website":  "https://www.huolala.cn"
+                      },
+                      {
+                          "industry":  "招聘",
+                          "name":  "BOSS直聘",
+                          "website":  "https://www.zhipin.com"
+                      },
+                      {
+                          "industry":  "社交媒体",
+                          "name":  "新浪微博",
+                          "website":  "https://career.weibo.com"
+                      },
+                      {
+                          "industry":  "媒体",
+                          "name":  "搜狐",
+                          "website":  "https://hr.sohu.com"
+                      },
+                      {
+                          "industry":  "知识",
+                          "name":  "知乎",
+                          "website":  "https://www.zhihu.com"
+                      },
+                      {
+                          "industry":  "电商",
+                          "name":  "唯品会",
+                          "website":  "https://jobs.vip.com"
+                      },
+                      {
+                          "industry":  "社交",
+                          "name":  "Soul",
+                          "website":  "https://www.soulapp.cn"
+                      },
+                      {
+                          "industry":  "社区",
+                          "name":  "豆瓣",
+                          "website":  "https://www.douban.com"
+                      },
+                      {
+                          "industry":  "音频",
+                          "name":  "喜马拉雅",
+                          "website":  "https://www.ximalaya.com"
+                      },
+                      {
+                          "industry":  "招聘",
+                          "name":  "猎聘",
+                          "website":  "https://www.liepin.com"
+                      },
+                      {
+                          "industry":  "社交",
+                          "name":  "即刻",
+                          "website":  "https://www.okjike.com"
+                      },
+                      {
+                          "industry":  "搜索",
+                          "name":  "搜狗",
+                          "website":  "https://www.sogou.com"
+                      },
+                      {
+                          "industry":  "工具",
+                          "name":  "美图",
+                          "website":  "https://www.meitu.com"
+                      },
+                      {
+                          "industry":  "搜索",
+                          "name":  "夸克",
+                          "website":  "https://www.quark.cn"
+                      },
+                      {
+                          "industry":  "健康",
+                          "name":  "Keep",
+                          "website":  "https://www.gotokeep.com"
+                      },
+                      {
+                          "industry":  "招聘",
+                          "name":  "前程无忧",
+                          "website":  "https://www.51job.com"
+                      },
+                      {
+                          "industry":  "招聘",
+                          "name":  "智联招聘",
+                          "website":  "https://www.zhaopin.com"
+                      },
+                      {
+                          "industry":  "企业服务",
+                          "name":  "金蝶",
+                          "website":  "https://www.kingdee.com"
+                      },
+                      {
+                          "industry":  "音乐",
+                          "name":  "唱吧",
+                          "website":  "https://www.changba.com"
+                      },
+                      {
+                          "industry":  "生鲜",
+                          "name":  "叮咚买菜",
+                          "website":  "https://www.100.me"
+                      },
+                      {
+                          "industry":  "旅游",
+                          "name":  "驴妈妈",
+                          "website":  "https://www.lvmama.com"
+                      },
+                      {
+                          "industry":  "婚恋",
+                          "name":  "珍爱网",
+                          "website":  "https://www.zhenai.com"
+                      },
+                      {
+                          "industry":  "设计",
+                          "name":  "花瓣网",
+                          "website":  "https://www.huaban.com"
+                      }
+                  ]
+}

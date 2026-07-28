@@ -1,9 +1,13 @@
-﻿package main
+package main
 
 import (
+	"context"
 	"encoding/json"
-	"log"
+	"log/slog"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -15,11 +19,18 @@ import (
 )
 
 func main() {
+	// 初始化结构化日志
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
+	slog.SetDefault(logger)
+
 	cfg := config.Load()
 
 	db, err := repository.NewPostgresDB(cfg)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		slog.Error("Failed to connect to database", "error", err)
+		os.Exit(1)
 	}
 
 	companyRepo := repository.NewCompanyRepository(db)
@@ -32,17 +43,18 @@ func main() {
 	userSvc := service.NewUserService(userRepo)
 	healthCheckSvc := service.NewHealthCheckService(companyRepo)
 
+	// 后台健康检查任务
 	go func() {
-		log.Println("Running initial health check...")
+		slog.Info("Running initial health check...")
 		healthCheckSvc.CheckAllCompanies()
-		log.Println("Initial health check completed")
+		slog.Info("Initial health check completed")
 
 		ticker := time.NewTicker(6 * time.Hour)
 		defer ticker.Stop()
 		for range ticker.C {
-			log.Println("Running scheduled health check...")
+			slog.Info("Running scheduled health check...")
 			healthCheckSvc.CheckAllCompanies()
-			log.Println("Health check completed")
+			slog.Info("Health check completed")
 		}
 	}()
 
@@ -50,15 +62,37 @@ func main() {
 	appHandler := handler.NewApplicationHandler(appSvc)
 	userHandler := handler.NewUserHandler(userSvc)
 	resumeHandler := handler.NewResumeHandler(resumeRepo)
+	healthHandler := handler.NewHealthHandler(db)
 
 	r := gin.Default()
 
+	// 中间件链
 	r.Use(middleware.CORS())
-	r.Use(middleware.Logger())
+	r.Use(middleware.RequestID())        // TraceID
+	r.Use(middleware.StructuredLogger()) // 结构化日志
+	r.Use(middleware.MetricsMiddleware()) // 指标采集
 	r.Use(middleware.Recovery())
 
+	// 探针端点（无需鉴权）
+	r.GET("/healthz", healthHandler.Liveness)
+	r.GET("/readyz", healthHandler.Readiness)
+
+	// 指标端点
 	api := r.Group("/api/v1")
 	{
+		// SRE 端点
+		sre := api.Group("/sre")
+		{
+			sre.GET("/health", func(c *gin.Context) {
+				c.JSON(200, gin.H{"status": "ok"})
+			})
+			sre.GET("/metrics", handler.GetMetrics)
+			sre.GET("/costs", func(c *gin.Context) {
+				c.JSON(200, gin.H{"message": "costs endpoint"})
+			})
+		}
+
+		// 认证路由
 		auth := api.Group("/auth")
 		{
 			auth.POST("/register", userHandler.Register)
@@ -68,6 +102,7 @@ func main() {
 			auth.GET("/me", middleware.AuthRequired(), userHandler.GetMe)
 		}
 
+		// 公司路由
 		companies := api.Group("/companies")
 		{
 			companies.GET("", companyHandler.List)
@@ -77,6 +112,7 @@ func main() {
 			companies.DELETE("/:id", middleware.AuthRequired(), companyHandler.Delete)
 		}
 
+		// SME公司
 		api.GET("/sme-companies", func(c *gin.Context) {
 			jsonFile := "data/sme_companies.json"
 			data, err := os.ReadFile(jsonFile)
@@ -92,6 +128,7 @@ func main() {
 			c.JSON(200, gin.H{"code": 0, "data": result["companies"], "message": "ok"})
 		})
 
+		// 投递记录
 		applications := api.Group("/applications")
 		{
 			applications.GET("", middleware.AuthRequired(), appHandler.List)
@@ -100,23 +137,13 @@ func main() {
 			applications.DELETE("/:id", middleware.AuthRequired(), appHandler.Delete)
 		}
 
-		// Resume routes
+		// 简历
 		resumes := api.Group("/resumes")
 		{
 			resumes.GET("", resumeHandler.List)
 			resumes.GET("/:id", resumeHandler.Get)
 			resumes.POST("", resumeHandler.Save)
 			resumes.DELETE("/:id", resumeHandler.Delete)
-		}
-
-		sre := api.Group("/sre")
-		{
-			sre.GET("/health", func(c *gin.Context) {
-				c.JSON(200, gin.H{"status": "ok"})
-			})
-			sre.GET("/costs", func(c *gin.Context) {
-				c.JSON(200, gin.H{"message": "costs endpoint"})
-			})
 		}
 	}
 
@@ -125,8 +152,38 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("Server starting on port %s", port)
-	if err := r.Run(":" + port); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+	// 优雅关闭（D8）
+	srv := &http.Server{
+		Addr:         ":" + port,
+		Handler:      r,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
 	}
+
+	// 启动服务
+	go func() {
+		slog.Info("Server starting", "port", port)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error("Server failed to start", "error", err)
+			os.Exit(1)
+		}
+	}()
+
+	// 等待中断信号
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	slog.Info("Shutting down server...")
+
+	// 给 5 秒完成现有请求
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		slog.Error("Server forced to shutdown", "error", err)
+	}
+
+	slog.Info("Server exited gracefully")
 }

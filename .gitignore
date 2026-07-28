@@ -32,8 +32,7 @@ Thumbs.db
 logs/
 
 # ============ Private Data (DO NOT COMMIT) ============
-# 公司数据库（私有数据，不公开）
-data/*.json
+# 鍏徃鏁版嵁搴擄紙绉佹湁鏁版嵁锛屼笉鍏紑锛?data/*.json
 data/*.sql
 data/*.ps1
 data/*.xlsx
@@ -41,11 +40,10 @@ data/*.csv
 !data/.gitkeep
 !data/README.md
 
-# 用户上传文件
+# 鐢ㄦ埛涓婁紶鏂囦欢
 uploads/
 
-# 数据库备份
-*.dump
+# 鏁版嵁搴撳浠?*.dump
 
 # ============ Docker Volumes ============
 pgdata/
@@ -67,3 +65,7 @@ coverage/
 ._*
 .Spotlight-V100
 .Trashes
+# Test output
+coverage.out
+coverage.html
+backend/bin/

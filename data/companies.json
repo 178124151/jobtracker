@@ -1,0 +1,156 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-07-14",
+  "companies": [
+    {
+      "id": "alibaba",
+      "name": "阿里巴巴",
+      "name_en": "Alibaba",
+      "website": "https://talent.alibaba.com",
+      "industry": "互联网",
+      "group": "bigtech",
+      "description": "电商、云计算、数字媒体与金融科技综合互联网集团",
+      "careers_page": "https://talent.alibaba.com/off-campus/position-list"
+    },
+    {
+      "id": "tencent",
+      "name": "腾讯",
+      "name_en": "Tencent",
+      "website": "https://careers.tencent.com",
+      "industry": "互联网",
+      "group": "bigtech",
+      "description": "社交、游戏、金融科技与企业服务科技集团",
+      "careers_page": "https://careers.tencent.com/search.html"
+    },
+    {
+      "id": "bytedance",
+      "name": "字节跳动",
+      "name_en": "ByteDance",
+      "website": "https://jobs.bytedance.com",
+      "industry": "互联网",
+      "group": "bigtech",
+      "description": "短视频、信息流内容与全球化企业协作服务",
+      "careers_page": "https://jobs.bytedance.com/experienced/position"
+    },
+    {
+      "id": "baidu",
+      "name": "百度",
+      "name_en": "Baidu",
+      "website": "https://talent.baidu.com",
+      "industry": "互联网",
+      "group": "bigtech",
+      "description": "搜索引擎、人工智能与自动驾驶技术领军企业",
+      "careers_page": "https://talent.baidu.com/external/baidu/campus.html"
+    },
+    {
+      "id": "meituan",
+      "name": "美团",
+      "name_en": "Meituan",
+      "website": "https://zhaopin.meituan.com",
+      "industry": "互联网",
+      "group": "bigtech",
+      "description": "本地生活服务、外卖配送与零售科技平台",
+      "careers_page": "https://zhaopin.meituan.com/web/position/list"
+    },
+    {
+      "id": "jd",
+      "name": "京东",
+      "name_en": "JD.com",
+      "website": "https://zhaopin.jd.com",
+      "industry": "互联网",
+      "group": "bigtech",
+      "description": "电商、物流、金融与技术服务集团",
+      "careers_page": "https://zhaopin.jd.com/home"
+    },
+    {
+      "id": "alibaba-cloud",
+      "name": "阿里云",
+      "name_en": "Alibaba Cloud",
+      "website": "https://careers.aliyun.com/home?lang=zh",
+      "industry": "云计算",
+      "group": "cloud",
+      "description": "全球领先的云计算及人工智能科技公司",
+      "careers_page": "https://careers.aliyun.com/off-campus/position-list"
+    },
+    {
+      "id": "tencent-cloud",
+      "name": "腾讯云",
+      "name_en": "Tencent Cloud",
+      "website": "https://careers.tencent.com",
+      "industry": "云计算",
+      "group": "cloud",
+      "description": "全球领先的云计算服务提供商",
+      "careers_page": "https://careers.tencent.com/search.html?keyword=云"
+    },
+    {
+      "id": "huawei-cloud",
+      "name": "华为云",
+      "name_en": "Huawei Cloud",
+      "website": "https://career.huawei.com",
+      "industry": "云计算",
+      "group": "cloud",
+      "description": "全球领先的ICT基础设施和智能终端提供商",
+      "careers_page": "https://career.huawei.com/reccampportal/portal5/campus-recruitment.html"
+    },
+    {
+      "id": "aws-china",
+      "name": "AWS中国",
+      "name_en": "AWS China",
+      "website": "https://aws.amazon.com/cn/careers",
+      "industry": "云计算",
+      "group": "foreign",
+      "description": "全球最大的云计算服务提供商",
+      "careers_page": "https://aws.amazon.com/cn/careers"
+    },
+    {
+      "id": "microsoft",
+      "name": "微软",
+      "name_en": "Microsoft",
+      "website": "https://careers.microsoft.com",
+      "industry": "科技",
+      "group": "foreign",
+      "description": "全球最大的软件公司之一，云计算与AI领军企业",
+      "careers_page": "https://careers.microsoft.com/global/en/search"
+    },
+    {
+      "id": "google-china",
+      "name": "谷歌中国",
+      "name_en": "Google China",
+      "website": "https://careers.google.com",
+      "industry": "科技",
+      "group": "foreign",
+      "description": "全球领先的搜索引擎与人工智能公司",
+      "careers_page": "https://careers.google.com/jobs/results"
+    },
+    {
+      "id": "didi",
+      "name": "滴滴出行",
+      "name_en": "DiDi",
+      "website": "https://talent.didiglobal.com",
+      "industry": "出行",
+      "group": "bigtech",
+      "description": "领先的移动出行平台，提供出租车、专车、快车等服务",
+      "careers_page": "https://talent.didiglobal.com/off-campus/position-list"
+    },
+    {
+      "id": "xiaomi",
+      "name": "小米",
+      "name_en": "Xiaomi",
+      "website": "https://hr.xiaomi.com",
+      "industry": "智能硬件",
+      "group": "bigtech",
+      "description": "智能手机、IoT与生活消费产品公司",
+      "careers_page": "https://hr.xiaomi.com/campus"
+    },
+    {
+      "id": "netease",
+      "name": "网易",
+      "name_en": "NetEase",
+      "website": "https://hr.163.com",
+      "industry": "互联网",
+      "group": "bigtech",
+      "description": "游戏、音乐、教育与电商互联网公司",
+      "careers_page": "https://hr.163.com/hr/positionList"
+    }
+  ]
+}
