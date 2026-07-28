@@ -7,25 +7,24 @@ import (
 	"github.com/yourusername/jobtracker/backend/internal/middleware"
 )
 
-// GetMetrics 返回当前指标
 func GetMetrics(c *gin.Context) {
 	m := middleware.AppMetrics
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+	m.Mu.RLock()
+	defer m.Mu.RUnlock()
 
 	uptime := time.Since(m.StartTime)
 
 	c.JSON(200, gin.H{
 		"code": 0,
 		"data": gin.H{
-			"total_requests":    m.TotalRequests,
-			"requests_by_path":  m.RequestsByPath,
+			"total_requests":     m.TotalRequests,
+			"requests_by_path":   m.RequestsByPath,
 			"requests_by_status": m.RequestsByStatus,
-			"avg_response_ms":   m.AvgResponseMs,
-			"uptime_seconds":    int(uptime.Seconds()),
-			"uptime_human":      uptime.String(),
-			"start_time":        m.StartTime,
-			"last_request":      m.LastRequestTime,
+			"avg_response_ms":    m.AvgResponseMs,
+			"uptime_seconds":     int(uptime.Seconds()),
+			"uptime_human":       uptime.String(),
+			"start_time":         m.StartTime,
+			"last_request":       m.LastRequestTime,
 		},
 		"message": "ok",
 	})
