@@ -1,25 +1,24 @@
 package service
 
 import (
-	"net/http"
+	"log/slog"
 	"sync"
 	"time"
 
 	"github.com/yourusername/jobtracker/backend/internal/model"
 	"github.com/yourusername/jobtracker/backend/internal/repository"
+	"github.com/yourusername/jobtracker/backend/pkg/utils"
 )
 
 type HealthCheckService struct {
 	companyRepo *repository.CompanyRepository
-	client      *http.Client
+	client      *utils.HTTPClient
 }
 
 func NewHealthCheckService(companyRepo *repository.CompanyRepository) *HealthCheckService {
 	return &HealthCheckService{
 		companyRepo: companyRepo,
-		client: &http.Client{
-			Timeout: 10 * time.Second,
-		},
+		client:      utils.NewHTTPClient(10*time.Second, 2), // 10s超时，重试2次
 	}
 }
 
@@ -27,11 +26,12 @@ func NewHealthCheckService(companyRepo *repository.CompanyRepository) *HealthChe
 func (s *HealthCheckService) CheckAllCompanies() {
 	companies, err := s.companyRepo.List("")
 	if err != nil {
+		slog.Error("Failed to list companies for health check", "error", err)
 		return
 	}
 
 	var wg sync.WaitGroup
-	semaphore := make(chan struct{}, 10) // 限制并发数
+	semaphore := make(chan struct{}, 10) // 并发限制
 
 	for _, company := range companies {
 		wg.Add(1)
@@ -44,26 +44,32 @@ func (s *HealthCheckService) CheckAllCompanies() {
 	}
 
 	wg.Wait()
+	slog.Info("Health check completed", "companies_count", len(companies))
 }
 
 func (s *HealthCheckService) checkCompany(company *model.Company) {
 	now := time.Now()
-	
-	resp, err := s.client.Get(company.Website)
+
+	statusCode, _, err := s.client.Get(company.Website)
+
 	if err != nil {
+		slog.Warn("Health check failed",
+			"company", company.Name,
+			"website", company.Website,
+			"error", err,
+		)
 		company.HealthStatus = "RED"
 		company.LastChecked = &now
 		s.companyRepo.Update(company)
 		return
 	}
-	defer resp.Body.Close()
 
-	if resp.StatusCode >= 200 && resp.StatusCode < 400 {
+	if statusCode >= 200 && statusCode < 400 {
 		company.HealthStatus = "GREEN"
 	} else {
 		company.HealthStatus = "YELLOW"
 	}
-	
+
 	company.LastChecked = &now
 	s.companyRepo.Update(company)
 }
