@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 
-// Grafana 通过 Nginx 代理，不需要端口
-const grafanaBaseUrl = computed(() => `${window.location.origin}/grafana`)
+// Grafana 通过 NodePort 访问
+const grafanaBaseUrl = computed(() => {
+  const host = window.location.hostname
+  return `http://${host}:30300`
+})
 
 const dashboardUid = 'server-monitoring'
 
