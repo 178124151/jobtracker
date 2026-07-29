@@ -11,11 +11,6 @@ spec:
     matchLabels:
       app: jobtracker
       component: backend
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
   template:
     metadata:
       labels:
@@ -25,58 +20,38 @@ spec:
       containers:
         - name: backend
           image: jobtracker-backend:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Never
           ports:
             - containerPort: 8080
-              name: http
           env:
             - name: DB_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: jobtracker-config
-                  key: db-host
+              value: "postgres-service"
             - name: DB_PORT
               value: "5432"
             - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: jobtracker-secrets
-                  key: db-user
+              value: "postgres"
             - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: jobtracker-secrets
-                  key: db-password
+              value: "postgres"
             - name: DB_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: jobtracker-config
-                  key: db-name
+              value: "jobtracker"
             - name: REDIS_ADDR
               value: "redis-service:6379"
             - name: JWT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: jobtracker-secrets
-                  key: jwt-secret
+              value: "jobtracker-secret-key-2026"
             - name: SERVER_PORT
               value: "8080"
-          # D5: 健康检查探针
           livenessProbe:
             httpGet:
               path: /healthz
               port: 8080
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 15
-            failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /readyz
               port: 8080
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10
             periodSeconds: 10
-            failureThreshold: 3
-          # 资源限制
           resources:
             requests:
               cpu: "100m"
@@ -101,5 +76,4 @@ spec:
     - port: 8080
       targetPort: 8080
       protocol: TCP
-      name: http
   type: ClusterIP

@@ -20,10 +20,9 @@ spec:
       containers:
         - name: frontend
           image: jobtracker-frontend:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Never
           ports:
             - containerPort: 80
-              name: http
           resources:
             requests:
               cpu: "50m"
@@ -47,5 +46,4 @@ spec:
     - port: 80
       targetPort: 80
       protocol: TCP
-      name: http
   type: ClusterIP

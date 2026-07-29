@@ -9,7 +9,3 @@ resources:
   - frontend.yaml
   - hpa.yaml
   - ingress.yaml
-
-commonLabels:
-  app: jobtracker
-  managed-by: kustomize

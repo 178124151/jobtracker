@@ -1,50 +1,50 @@
 #!/bin/bash
-# K8s 一键部署脚本
-# 用法: bash deploy-k8s.sh
+# JobTracker K8s 部署脚本
 
 set -e
 
 echo "=========================================="
-echo "  JobTracker K8s 部署"
+echo "  JobTracker K8s Deploy"
 echo "=========================================="
 
-# 检查 kubectl
-if ! command -v kubectl &> /dev/null; then
-    echo "错误: kubectl 未安装"
-    exit 1
-fi
+cd /opt/jobtracker
 
-# 检查集群连接
-echo "[1/4] 检查集群连接..."
-kubectl cluster-info
+# 1. 构建镜像
+echo "[1/5] Building images..."
+sudo docker build -t jobtracker-backend:latest ./backend
+sudo docker build -t jobtracker-frontend:latest ./frontend
 
-# 构建镜像（如果使用 k3s）
-echo "[2/4] 构建 Docker 镜像..."
-docker build -t jobtracker-backend:latest ./backend
-docker build -t jobtracker-frontend:latest ./frontend
+# 2. 导入到 k3s
+echo "[2/5] Importing images to k3s..."
+sudo docker save jobtracker-backend:latest | sudo k3s ctr images import -
+sudo docker save jobtracker-frontend:latest | sudo k3s ctr images import -
 
-# 导入镜像到 k3s（如果是 k3s 环境）
-if command -v k3s &> /dev/null; then
-    echo "导入镜像到 k3s..."
-    docker save jobtracker-backend:latest | k3s ctr images import -
-    docker save jobtracker-frontend:latest | k3s ctr images import -
-fi
+# 3. 删除旧资源
+echo "[3/5] Deleting old resources..."
+kubectl delete -f infra/k8s/base/ --ignore-not-found 2>/dev/null || true
+sleep 5
 
-# 部署
-echo "[3/4] 部署到 K8s..."
-kubectl apply -k infra/k8s/base/
+# 4. 部署新资源
+echo "[4/5] Deploying to K8s..."
+kubectl apply -f infra/k8s/base/config.yaml
+kubectl apply -f infra/k8s/base/postgres.yaml
+kubectl apply -f infra/k8s/base/redis.yaml
+sleep 10
+kubectl apply -f infra/k8s/base/backend.yaml
+kubectl apply -f infra/k8s/base/frontend.yaml
+kubectl apply -f infra/k8s/base/hpa.yaml
+kubectl apply -f infra/k8s/base/ingress.yaml
 
-# 等待就绪
-echo "[4/4] 等待 Pod 就绪..."
-kubectl wait --for=condition=Ready pods -l app=jobtracker --timeout=180s
+# 5. 等待启动
+echo "[5/5] Waiting for pods..."
+sleep 30
+kubectl get pods
 
 echo ""
 echo "=========================================="
-echo "  部署完成！"
+echo "  Deploy Complete!"
 echo "=========================================="
 echo ""
-kubectl get pods -l app=jobtracker
-echo ""
-echo "访问方式:"
+echo "Access via port-forward:"
 echo "  kubectl port-forward svc/frontend-service 8080:80"
-echo "  然后访问 http://localhost:8080"
+echo "  Then visit http://localhost:8080"

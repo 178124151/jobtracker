@@ -1,12 +1,11 @@
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: postgres
   labels:
     app: jobtracker
     component: database
 spec:
-  serviceName: postgres-service
   replicas: 1
   selector:
     matchLabels:
@@ -23,26 +22,13 @@ spec:
           image: postgres:16-alpine
           ports:
             - containerPort: 5432
-              name: postgres
           env:
             - name: POSTGRES_DB
-              valueFrom:
-                configMapKeyRef:
-                  name: jobtracker-config
-                  key: db-name
+              value: jobtracker
             - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: jobtracker-secrets
-                  key: db-user
+              value: postgres
             - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: jobtracker-secrets
-                  key: db-password
-          volumeMounts:
-            - name: postgres-data
-              mountPath: /var/lib/postgresql/data
+              value: postgres
           resources:
             requests:
               cpu: "100m"
@@ -52,28 +38,14 @@ spec:
               memory: "512Mi"
           livenessProbe:
             exec:
-              command:
-                - pg_isready
-                - -U
-                - postgres
-            initialDelaySeconds: 30
+              command: ["pg_isready", "-U", "postgres"]
+            initialDelaySeconds: 15
             periodSeconds: 10
           readinessProbe:
             exec:
-              command:
-                - pg_isready
-                - -U
-                - postgres
+              command: ["pg_isready", "-U", "postgres"]
             initialDelaySeconds: 5
             periodSeconds: 5
-  volumeClaimTemplates:
-    - metadata:
-        name: postgres-data
-      spec:
-        accessModes: ["ReadWriteOnce"]
-        resources:
-          requests:
-            storage: 5Gi
 ---
 apiVersion: v1
 kind: Service

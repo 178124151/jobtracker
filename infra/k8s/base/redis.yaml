@@ -23,7 +23,6 @@ spec:
           command: ["redis-server", "--save", "21600", "1"]
           ports:
             - containerPort: 6379
-              name: redis
           resources:
             requests:
               cpu: "50m"
