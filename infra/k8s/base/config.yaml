@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jobtracker-config
+  labels:
+    app: jobtracker
+data:
+  db-host: "postgres-service"
+  db-name: "jobtracker"
+  redis-addr: "redis-service:6379"
+  server-port: "8080"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jobtracker-secrets
+  labels:
+    app: jobtracker
+type: Opaque
+data:
+  # base64 编码的值（echo -n 'value' | base64）
+  db-user: cG9zdGdyZXM=          # postgres
+  db-password: cG9zdGdyZXM=      # postgres（生产环境请修改）
+  jwt-secret: am9idHJhY2tlci1zZWNyZXQta2V5LTIwMjY=  # jobtracker-secret-key-2026
