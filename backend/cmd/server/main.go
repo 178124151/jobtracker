@@ -19,7 +19,7 @@ import (
 )
 
 func main() {
-	// 鍒濆鍖栫粨鏋勫寲鏃ュ織
+	// 初始化结构化日志
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}))
@@ -43,7 +43,8 @@ func main() {
 	userSvc := service.NewUserService(userRepo)
 	healthCheckSvc := service.NewHealthCheckService(companyRepo)
 
-	// 鍚庡彴鍋ュ悍妫€鏌ヤ换鍔?	go func() {
+	// 后台健康检查任务
+	go func() {
 		slog.Info("Running initial health check...")
 		healthCheckSvc.CheckAllCompanies()
 		slog.Info("Initial health check completed")
@@ -65,19 +66,21 @@ func main() {
 
 	r := gin.Default()
 
-	// 涓棿浠堕摼
+	// 中间件
 	r.Use(middleware.CORS())
-	r.Use(middleware.RequestID())        // TraceID
-	r.Use(middleware.StructuredLogger()) // 缁撴瀯鍖栨棩蹇?	r.Use(middleware.MetricsMiddleware()) // 鎸囨爣閲囬泦
+	r.Use(middleware.RequestID())
+	r.Use(middleware.StructuredLogger())
+	r.Use(middleware.MetricsMiddleware())
 	r.Use(middleware.Recovery())
 
-	// 鎺㈤拡绔偣锛堟棤闇€閴存潈锛?	r.GET("/healthz", healthHandler.Liveness)
+	// 健康检查端点
+	r.GET("/healthz", healthHandler.Liveness)
 	r.GET("/readyz", healthHandler.Readiness)
 
-	// 鎸囨爣绔偣
+	// API 路由
 	api := r.Group("/api/v1")
 	{
-		// SRE 绔偣
+		// SRE 端点
 		sre := api.Group("/sre")
 		{
 			sre.GET("/health", func(c *gin.Context) {
@@ -90,7 +93,7 @@ func main() {
 			})
 		}
 
-		// 璁よ瘉璺敱
+		// 认证路由
 		auth := api.Group("/auth")
 		{
 			auth.POST("/register", userHandler.Register)
@@ -100,7 +103,7 @@ func main() {
 			auth.GET("/me", middleware.AuthRequired(), userHandler.GetMe)
 		}
 
-		// 鍏徃璺敱
+		// 公司路由
 		companies := api.Group("/companies")
 		{
 			companies.GET("", companyHandler.List)
@@ -110,7 +113,7 @@ func main() {
 			companies.DELETE("/:id", middleware.AuthRequired(), companyHandler.Delete)
 		}
 
-		// SME鍏徃
+		// SME公司
 		api.GET("/sme-companies", func(c *gin.Context) {
 			jsonFile := "data/sme_companies.json"
 			data, err := os.ReadFile(jsonFile)
@@ -126,7 +129,8 @@ func main() {
 			c.JSON(200, gin.H{"code": 0, "data": result["companies"], "message": "ok"})
 		})
 
-		// 鎶曢€掕褰?		applications := api.Group("/applications")
+		// 投递记录
+		applications := api.Group("/applications")
 		{
 			applications.GET("", middleware.AuthRequired(), appHandler.List)
 			applications.POST("", middleware.AuthRequired(), appHandler.Create)
@@ -134,7 +138,8 @@ func main() {
 			applications.DELETE("/:id", middleware.AuthRequired(), appHandler.Delete)
 		}
 
-		// 绠€鍘?		resumes := api.Group("/resumes")
+		// 简历
+		resumes := api.Group("/resumes")
 		{
 			resumes.GET("", resumeHandler.List)
 			resumes.GET("/:id", resumeHandler.Get)
@@ -148,7 +153,8 @@ func main() {
 		port = "8080"
 	}
 
-	// 浼橀泤鍏抽棴锛圖8锛?	srv := &http.Server{
+	// 优雅关闭
+	srv := &http.Server{
 		Addr:         ":" + port,
 		Handler:      r,
 		ReadTimeout:  15 * time.Second,
@@ -156,7 +162,6 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	// 鍚姩鏈嶅姟
 	go func() {
 		slog.Info("Server starting", "port", port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -165,14 +170,14 @@ func main() {
 		}
 	}()
 
-	// 绛夊緟涓柇淇″彿
+	// 等待中断信号
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
 	slog.Info("Shutting down server...")
 
-	// 缁?5 绉掑畬鎴愮幇鏈夎姹?	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
