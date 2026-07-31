@@ -19,7 +19,7 @@ import (
 )
 
 func main() {
-	// 初始化结构化日志
+	// 鍒濆鍖栫粨鏋勫寲鏃ュ織
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}))
@@ -43,8 +43,7 @@ func main() {
 	userSvc := service.NewUserService(userRepo)
 	healthCheckSvc := service.NewHealthCheckService(companyRepo)
 
-	// 后台健康检查任务
-	go func() {
+	// 鍚庡彴鍋ュ悍妫€鏌ヤ换鍔?	go func() {
 		slog.Info("Running initial health check...")
 		healthCheckSvc.CheckAllCompanies()
 		slog.Info("Initial health check completed")
@@ -66,33 +65,32 @@ func main() {
 
 	r := gin.Default()
 
-	// 中间件链
+	// 涓棿浠堕摼
 	r.Use(middleware.CORS())
 	r.Use(middleware.RequestID())        // TraceID
-	r.Use(middleware.StructuredLogger()) // 结构化日志
-	r.Use(middleware.MetricsMiddleware()) // 指标采集
+	r.Use(middleware.StructuredLogger()) // 缁撴瀯鍖栨棩蹇?	r.Use(middleware.MetricsMiddleware()) // 鎸囨爣閲囬泦
 	r.Use(middleware.Recovery())
 
-	// 探针端点（无需鉴权）
-	r.GET("/healthz", healthHandler.Liveness)
+	// 鎺㈤拡绔偣锛堟棤闇€閴存潈锛?	r.GET("/healthz", healthHandler.Liveness)
 	r.GET("/readyz", healthHandler.Readiness)
 
-	// 指标端点
+	// 鎸囨爣绔偣
 	api := r.Group("/api/v1")
 	{
-		// SRE 端点
+		// SRE 绔偣
 		sre := api.Group("/sre")
 		{
 			sre.GET("/health", func(c *gin.Context) {
 				c.JSON(200, gin.H{"status": "ok"})
 			})
 			sre.GET("/metrics", handler.GetMetrics)
+			sre.GET("/prometheus", handler.GetPrometheusMetrics)
 			sre.GET("/costs", func(c *gin.Context) {
 				c.JSON(200, gin.H{"message": "costs endpoint"})
 			})
 		}
 
-		// 认证路由
+		// 璁よ瘉璺敱
 		auth := api.Group("/auth")
 		{
 			auth.POST("/register", userHandler.Register)
@@ -102,7 +100,7 @@ func main() {
 			auth.GET("/me", middleware.AuthRequired(), userHandler.GetMe)
 		}
 
-		// 公司路由
+		// 鍏徃璺敱
 		companies := api.Group("/companies")
 		{
 			companies.GET("", companyHandler.List)
@@ -112,7 +110,7 @@ func main() {
 			companies.DELETE("/:id", middleware.AuthRequired(), companyHandler.Delete)
 		}
 
-		// SME公司
+		// SME鍏徃
 		api.GET("/sme-companies", func(c *gin.Context) {
 			jsonFile := "data/sme_companies.json"
 			data, err := os.ReadFile(jsonFile)
@@ -128,8 +126,7 @@ func main() {
 			c.JSON(200, gin.H{"code": 0, "data": result["companies"], "message": "ok"})
 		})
 
-		// 投递记录
-		applications := api.Group("/applications")
+		// 鎶曢€掕褰?		applications := api.Group("/applications")
 		{
 			applications.GET("", middleware.AuthRequired(), appHandler.List)
 			applications.POST("", middleware.AuthRequired(), appHandler.Create)
@@ -137,8 +134,7 @@ func main() {
 			applications.DELETE("/:id", middleware.AuthRequired(), appHandler.Delete)
 		}
 
-		// 简历
-		resumes := api.Group("/resumes")
+		// 绠€鍘?		resumes := api.Group("/resumes")
 		{
 			resumes.GET("", resumeHandler.List)
 			resumes.GET("/:id", resumeHandler.Get)
@@ -152,8 +148,7 @@ func main() {
 		port = "8080"
 	}
 
-	// 优雅关闭（D8）
-	srv := &http.Server{
+	// 浼橀泤鍏抽棴锛圖8锛?	srv := &http.Server{
 		Addr:         ":" + port,
 		Handler:      r,
 		ReadTimeout:  15 * time.Second,
@@ -161,7 +156,7 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	// 启动服务
+	// 鍚姩鏈嶅姟
 	go func() {
 		slog.Info("Server starting", "port", port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -170,15 +165,14 @@ func main() {
 		}
 	}()
 
-	// 等待中断信号
+	// 绛夊緟涓柇淇″彿
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
 	slog.Info("Shutting down server...")
 
-	// 给 5 秒完成现有请求
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	// 缁?5 绉掑畬鎴愮幇鏈夎姹?	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
