@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 
-// Grafana 通过 NodePort 访问
 const grafanaBaseUrl = computed(() => {
   const host = window.location.hostname
   return `http://${host}:30300`
@@ -10,9 +9,9 @@ const grafanaBaseUrl = computed(() => {
 const dashboardUid = 'server-monitoring'
 
 const panels = ref([
-  { id: 1, title: 'CPU 使用率', type: 'gauge', height: '300px' },
-  { id: 2, title: '内存使用率', type: 'gauge', height: '300px' },
-  { id: 3, title: 'CPU 使用趋势', type: 'timeseries', height: '400px' }
+  { id: 1, title: 'CPU Usage', type: 'gauge', height: '300px' },
+  { id: 2, title: 'Memory Usage', type: 'gauge', height: '300px' },
+  { id: 3, title: 'CPU Trend', type: 'timeseries', height: '400px' }
 ])
 
 const getGrafanaUrl = (panelId: number) => {
@@ -20,14 +19,14 @@ const getGrafanaUrl = (panelId: number) => {
 }
 
 const metrics = ref({
-  uptime: '0天',
+  uptime: '0 days',
   totalRequests: '0',
   avgResponseTime: '0ms',
   errorRate: '0%'
 })
 
 const recentAlerts = ref([
-  { id: 1, time: '暂无告警', level: 'info', message: '系统运行正常' }
+  { id: 1, time: 'No alerts', level: 'info', message: 'System running normally' }
 ])
 
 const fetchMetrics = async () => {
@@ -35,7 +34,7 @@ const fetchMetrics = async () => {
     const response = await fetch('/api/v1/sre/health')
     const data = await response.json()
     if (data.status === 'ok') {
-      metrics.value.uptime = '运行中'
+      metrics.value.uptime = 'Running'
     }
   } catch (error) {
     console.error('Failed to fetch metrics:', error)
@@ -50,33 +49,33 @@ onMounted(() => {
 <template>
   <div class="monitor-page">
     <div class="page-header">
-      <h2>链路监控</h2>
+      <h2>Link Monitoring</h2>
       <div class="header-links">
-        <a :href="grafanaBaseUrl" target="_blank" class="grafana-link">打开 Grafana 面板</a>
+        <a :href="grafanaBaseUrl" target="_blank" class="grafana-link">Open Grafana Panel</a>
       </div>
     </div>
 
     <div class="metrics-grid">
       <div class="metric-card">
-        <div class="metric-label">服务状态</div>
+        <div class="metric-label">Service Status</div>
         <div class="metric-value green">{{ metrics.uptime }}</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">总请求数</div>
+        <div class="metric-label">Total Requests</div>
         <div class="metric-value">{{ metrics.totalRequests }}</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">平均响应</div>
+        <div class="metric-label">Avg Response</div>
         <div class="metric-value">{{ metrics.avgResponseTime }}</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">错误率</div>
+        <div class="metric-label">Error Rate</div>
         <div class="metric-value">{{ metrics.errorRate }}</div>
       </div>
     </div>
 
     <div class="grafana-section">
-      <h3>服务器监控</h3>
+      <h3>Server Monitoring</h3>
       <div class="grafana-panels">
         <div
           v-for="panel in panels"
@@ -90,7 +89,7 @@ onMounted(() => {
               :href="`${grafanaBaseUrl}/d/${dashboardUid}?orgId=1&viewPanel=${panel.id}`"
               target="_blank"
               class="panel-expand"
-            >↗</a>
+            >&#8599;</a>
           </div>
           <iframe
             :src="getGrafanaUrl(panel.id)"
@@ -103,7 +102,7 @@ onMounted(() => {
     </div>
 
     <div class="alerts-section">
-      <h3>最近告警</h3>
+      <h3>Recent Alerts</h3>
       <div class="alerts-list">
         <div
           v-for="alert in recentAlerts"
