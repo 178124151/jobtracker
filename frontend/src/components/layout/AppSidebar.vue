@@ -9,7 +9,6 @@ const route = useRoute()
 const navItems = [
   { path: '/companies', label: '公司导航', icon: '司' },
   { path: '/sme', label: '小而美企业', icon: '美' },
-  { path: '/tracker', label: '投递进度', icon: '投' },
   { path: '/resume', label: '简历制作', icon: '简' },
   { path: '/monitor', label: '链路监控', icon: '监' }
 ]
