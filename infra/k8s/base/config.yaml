@@ -19,5 +19,5 @@ metadata:
 type: Opaque
 data:
   db-user: cG9zdGdyZXM=
-  db-password: cG9zdGdyZXM=
-  jwt-secret: am9idHJhY2tlci1zZWNyZXQta2V5LTIwMjY=
+  db-password: dld6TDJXeUhDdThZOXg3NWFpM3VRckJVNjh6cDZGOGs=
+  jwt-secret: NmRxc01yRG5kakFCRXY0VjllSFRZcmtOckNxM2o5ektiQ3NmUVhidUdVNHc0Nldq

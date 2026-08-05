@@ -6,10 +6,9 @@ Write-Host "==========================================" -ForegroundColor Cyan
 
 Set-Location $PSScriptRoot
 
-# 清理旧容器和缓存
+# 清理构建缓存（不删除数据卷）
 Write-Host ""
-Write-Host "Cleaning up..." -ForegroundColor Yellow
-docker compose down -v 2>&1 | Out-Null
+Write-Host "Cleaning build cache..." -ForegroundColor Yellow
 docker builder prune -f 2>&1 | Out-Null
 
 # 重新构建
@@ -48,5 +47,5 @@ Write-Host "  URLs" -ForegroundColor Green
 Write-Host "==========================================" -ForegroundColor Green
 Write-Host "Frontend:  http://localhost:5173" -ForegroundColor White
 Write-Host "API:       http://localhost:8080" -ForegroundColor White
-Write-Host "Grafana:   http://localhost:3000 (admin/admin)" -ForegroundColor White
+Write-Host "Grafana:   http://localhost:3000" -ForegroundColor White
 Write-Host "==========================================" -ForegroundColor Cyan

@@ -11,6 +11,11 @@ cd /opt/jobtracker
 echo "[1/4] 拉取最新代码..."
 git pull origin main
 
+if [ ! -f .env ]; then
+    echo "Creating .env from .env.example..."
+    cp .env.example .env
+fi
+
 echo "[2/4] 重新构建服务..."
 docker compose up -d --build
 

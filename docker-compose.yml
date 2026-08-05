@@ -21,10 +21,10 @@ services:
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USER=postgres
-      - DB_PASSWORD=jobtracker2026
+      - DB_PASSWORD=${DB_PASSWORD:-vWzL2WyHCu8Y9x75ai3uQrBU68zp6F8k}
       - DB_NAME=jobtracker
       - REDIS_ADDR=redis:6379
-      - JWT_SECRET=jobtracker-sre-secret-key-2026
+      - JWT_SECRET=${JWT_SECRET:-6dqsMrDndjABEv4V9eHTYrkNrCq3j9zKbCsfQXbuGU4w46Wj}
       - SERVER_PORT=8080
     volumes:
       - ./data:/root/data
@@ -38,11 +38,12 @@ services:
   postgres:
     image: postgres:16-alpine
     ports:
-      - "5432:5432"
+      # 只绑定本机，避免把数据库暴露到公网
+      - "127.0.0.1:5432:5432"
     environment:
       - POSTGRES_DB=jobtracker
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=jobtracker2026
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-vWzL2WyHCu8Y9x75ai3uQrBU68zp6F8k}
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./backend/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -87,7 +88,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-UrFt3ctHWstLjyBtUcEAss8A}
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer

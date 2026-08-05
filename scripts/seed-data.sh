@@ -24,9 +24,31 @@ if [ -z "$PG_POD" ]; then
     exit 1
 fi
 
+# 确保 jobtracker 数据库和表结构存在
+DB_EXISTS=$(kubectl exec $PG_POD -- psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='jobtracker'" 2>/dev/null | tr -d ' ')
+if [ "$DB_EXISTS" != "1" ]; then
+    echo "Creating jobtracker database..."
+    kubectl exec $PG_POD -- psql -U postgres -c "CREATE DATABASE jobtracker;"
+fi
+
+TABLE_EXISTS=$(kubectl exec $PG_POD -- psql -U postgres -d jobtracker -tAc "SELECT to_regclass('public.companies')" 2>/dev/null | tr -d ' ')
+if [ -z "$TABLE_EXISTS" ] || [ "$TABLE_EXISTS" = "NULL" ]; then
+    echo "Applying database schema..."
+    cat backend/migrations/init.sql | kubectl exec -i $PG_POD -- psql -U postgres -d jobtracker
+fi
+
 # 检查是否已有数据
 echo "Checking existing data..."
 COUNT=$(kubectl exec $PG_POD -- psql -U postgres -d jobtracker -t -c "SELECT COUNT(*) FROM companies;" 2>/dev/null | tr -d ' ' || echo "0")
+
+echo "Setting up SME data..."
+if [ -f data/sme_companies.json ]; then
+    kubectl create configmap sme-data --from-file=data/sme_companies.json --dry-run=client -o yaml | kubectl apply -f -
+    kubectl rollout restart deployment/jobtracker-backend || true
+    echo "SME data setup complete"
+else
+    echo "Warning: data/sme_companies.json not found, skipping SME ConfigMap"
+fi
 
 if [ "$COUNT" -gt 0 ]; then
     echo "Database already has $COUNT companies, skipping seed."
@@ -62,17 +84,6 @@ EOF
 # 检查导入结果
 NEW_COUNT=$(kubectl exec $PG_POD -- psql -U postgres -d jobtracker -t -c "SELECT COUNT(*) FROM companies;" 2>/dev/null | tr -d ' ')
 echo "Imported $NEW_COUNT companies successfully!"
-
-# 将 SME 数据复制到后端 Pod
-echo "Setting up SME data..."
-sleep 10
-BACKEND_POD=$(kubectl get pod -l component=backend -o jsonpath="{.items[0].metadata.name}" 2>/dev/null)
-if [ -n "$BACKEND_POD" ]; then
-    kubectl cp data/sme_companies.json $BACKEND_POD:/root/data/sme_companies.json 2>/dev/null || echo "Warning: Could not copy SME data to backend pod"
-    echo "SME data setup complete"
-else
-    echo "Warning: Backend pod not found"
-fi
 
 echo ""
 echo "=== Seed Data Import Complete ==="

@@ -8,6 +8,8 @@ echo "=========================================="
 
 cd /opt/jobtracker
 
+git pull origin main
+
 # 1. 拉取镜像
 echo "[1/6] Pulling images..."
 sudo docker pull postgres:16-alpine
@@ -44,11 +46,22 @@ kubectl apply -f infra/k8s/base/config.yaml
 kubectl apply -f infra/k8s/base/postgres.yaml
 kubectl apply -f infra/k8s/base/redis.yaml
 kubectl apply -f infra/k8s/base/grafana.yaml
+
+# 更新 SME 数据 ConfigMap（数据文件不入库）
+if [ -f data/sme_companies.json ]; then
+  kubectl create configmap sme-data --from-file=data/sme_companies.json --dry-run=client -o yaml | kubectl apply -f -
+else
+  echo "Warning: data/sme_companies.json not found, skipping SME ConfigMap"
+fi
+
+kubectl wait --for=condition=Ready pod -l component=database --timeout=120s
 sleep 15
 kubectl apply -f infra/k8s/base/backend.yaml
 kubectl apply -f infra/k8s/base/frontend.yaml
 kubectl apply -f infra/k8s/base/hpa.yaml
 kubectl apply -f infra/k8s/base/ingress.yaml
+
+kubectl rollout status deployment/jobtracker-backend --timeout=120s || true
 
 # 6. 等待启动
 echo "[6/6] Waiting for pods..."

@@ -7,11 +7,7 @@ echo "=========================================="
 echo "  Building JobTracker"
 echo "=========================================="
 
-# 清理旧容器
-echo "Cleaning up..."
-docker compose down -v
-
-# 重新构建
+# 重新构建（不删除数据卷；如需完全重置请手动执行 docker compose down -v）
 echo "Building services..."
 docker compose up -d --build
 
@@ -32,5 +28,5 @@ echo "  Access URLs"
 echo "=========================================="
 echo "Frontend:  http://localhost:5173"
 echo "API:       http://localhost:8080"
-echo "Grafana:   http://localhost:3000 (admin/admin)"
+echo "Grafana:   http://localhost:3000"
 echo "=========================================="

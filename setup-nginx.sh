@@ -75,6 +75,8 @@ ufw deny 5173/tcp
 ufw deny 8080/tcp
 ufw deny 3000/tcp
 ufw deny 9090/tcp
+ufw deny 5432/tcp
+ufw deny 6379/tcp
 ufw --force enable
 
 echo ""
@@ -84,4 +86,5 @@ echo "  前端: http://服务器IP/"
 echo "  API:  http://服务器IP/api/"
 echo "  监控: http://服务器IP/grafana/"
 echo ""
-echo "已关闭的端口: 5173, 8080, 3000, 9090"
+echo "已关闭的端口: 5173, 8080, 3000, 9090, 5432, 6379"
+echo "警告: 不要把 PostgreSQL/Redis 端口暴露到公网，否则可能被扫描脚本攻击"

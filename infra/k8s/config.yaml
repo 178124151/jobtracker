@@ -14,5 +14,5 @@ metadata:
   name: jobtracker-secrets
 type: Opaque
 data:
-  db-password: cG9zdGdyZXM=  # base64 encoded "postgres"
-  jwt-secret: Y2hhbmdlLXRoaXMtc2VjcmV0  # base64 encoded "change-this-secret"
+  db-password: dld6TDJXeUhDdThZOXg3NWFpM3VRckJVNjh6cDZGOGs=
+  jwt-secret: NmRxc01yRG5kakFCRXY0VjllSFRZcmtOckNxM2o5ektiQ3NmUVhidUdVNHc0Nldq
