@@ -24,11 +24,20 @@ if ! command -v kubectl &> /dev/null; then
     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
     chmod +x kubectl
     mv kubectl /usr/local/bin/
+else
+    echo "[3/4] kubectl 已存在（k3s 已自动创建 symlink）"
 fi
 
 # 4. 等待节点就绪
 echo "[4/4] 等待节点就绪..."
-kubectl wait --for=condition=Ready node --all --timeout=120s
+for i in {1..60}; do
+    if kubectl get nodes --no-headers 2>/dev/null | grep -q .; then
+        kubectl wait --for=condition=Ready node --all --timeout=60s && break
+    fi
+    echo "Waiting for node to register... ($i/60)"
+    sleep 5
+done
+kubectl get nodes
 
 echo ""
 echo "=========================================="
