@@ -60,6 +60,8 @@ bash scripts/deploy-k8s.sh
 bash scripts/seed-data.sh
 ```
 
+`seed-data.sh` 已内置完整公司备份；普通模式只在空表时导入，需要覆盖恢复时执行 `bash scripts/seed-data.sh --restore`。
+
 4. 配置宿主机 Nginx + UFW，只开放 22 和 80：
 
 ```bash
