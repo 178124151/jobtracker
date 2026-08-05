@@ -54,7 +54,7 @@ kubectl apply -f infra/k8s/base/grafana.yaml
 
 # 更新 SME 数据 ConfigMap（数据文件不入库）
 if [ -f data/sme_companies.json ]; then
-  kubectl create configmap sme-data --from-file=data/sme_companies.json --dry-run=client -o yaml | kubectl apply -f -
+  kubectl create configmap sme-data --from-file=data/sme_companies.json --dry-run=client -o yaml | kubectl apply --server-side --force-conflicts -f - || echo "Warning: failed to update sme-data ConfigMap"
 else
   echo "Warning: data/sme_companies.json not found, skipping SME ConfigMap"
 fi

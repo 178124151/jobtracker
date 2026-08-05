@@ -43,7 +43,7 @@ COUNT=$(kubectl exec $PG_POD -- psql -U postgres -d jobtracker -t -c "SELECT COU
 
 echo "Setting up SME data..."
 if [ -f data/sme_companies.json ]; then
-    kubectl create configmap sme-data --from-file=data/sme_companies.json --dry-run=client -o yaml | kubectl apply -f -
+    kubectl create configmap sme-data --from-file=data/sme_companies.json --dry-run=client -o yaml | kubectl apply --server-side --force-conflicts -f - || echo "Warning: failed to update sme-data ConfigMap"
     kubectl rollout restart deployment/jobtracker-backend || true
     echo "SME data setup complete"
 else
