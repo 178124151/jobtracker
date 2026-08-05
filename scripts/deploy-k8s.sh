@@ -17,7 +17,7 @@ sudo docker pull redis:7.2-alpine
 sudo docker pull grafana/grafana:latest
 
 # 2. 构建应用镜像
-echo "[2/6] Building application images..."
+echo "[2/6] Building application images... (first build may take a few minutes)"
 sudo docker build -t jobtracker-backend:latest ./backend
 sudo docker build -t jobtracker-frontend:latest ./frontend
 
