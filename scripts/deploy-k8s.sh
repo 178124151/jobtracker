@@ -59,7 +59,7 @@ else
   echo "Warning: data/sme_companies.json not found, skipping SME ConfigMap"
 fi
 
-kubectl wait --for=condition=Ready pod -l component=database --timeout=120s
+kubectl wait --for=condition=Ready pod -l component=database --timeout=120s || true
 sleep 15
 kubectl apply -f infra/k8s/base/backend.yaml
 kubectl apply -f infra/k8s/base/frontend.yaml

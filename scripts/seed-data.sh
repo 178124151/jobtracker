@@ -24,6 +24,12 @@ if [ -z "$PG_POD" ]; then
     exit 1
 fi
 
+if [ "$STATUS" != "Running" ]; then
+    echo "ERROR: PostgreSQL pod is not Running (status=$STATUS)"
+    kubectl describe pod "$PG_POD" | tail -50
+    exit 1
+fi
+
 # 确保 jobtracker 数据库和表结构存在
 DB_EXISTS=$(kubectl exec $PG_POD -- psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='jobtracker'" 2>/dev/null | tr -d ' ')
 if [ "$DB_EXISTS" != "1" ]; then
