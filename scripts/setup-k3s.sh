@@ -10,7 +10,7 @@ echo "=========================================="
 
 # 1. 安装 k3s
 echo "[1/4] 安装 k3s..."
-curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable=traefik" sh -
+curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn INSTALL_K3S_EXEC="--disable=traefik" sh -
 
 # 2. 配置 kubectl
 echo "[2/4] 配置 kubectl..."
