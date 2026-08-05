@@ -7,6 +7,14 @@ if ! command -v k3s >/dev/null 2>&1; then
     exit 1
 fi
 
+if ! sudo k3s ctr images list | grep -q "rancher/mirrored-pause:3.6"; then
+    echo "Importing pause image..."
+    sudo docker pull rancher/mirrored-pause:3.6
+    sudo docker save rancher/mirrored-pause:3.6 -o /tmp/pause.tar
+    sudo k3s ctr images import /tmp/pause.tar
+    rm -f /tmp/pause.tar
+fi
+
 echo "=========================================="
 echo "  JobTracker K8s Deploy"
 echo "=========================================="
