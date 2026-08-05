@@ -63,7 +63,10 @@ fi
 
 # 导入大厂公司数据
 echo "Importing companies..."
-kubectl exec $PG_POD -- psql -U postgres -d jobtracker << 'EOF'
+if [ -f data/seed_all_companies.sql ]; then
+    cat data/seed_all_companies.sql | kubectl exec -i $PG_POD -- psql -U postgres -d jobtracker
+else
+    kubectl exec -i $PG_POD -- psql -U postgres -d jobtracker << 'EOF'
 INSERT INTO companies (id, name, website, industry, "group", description, is_preset, health_status) VALUES
 (gen_random_uuid(), '字节跳动', 'https://jobs.bytedance.com', '互联网', 'bigtech', '短视频和信息流平台', true, 'GREEN'),
 (gen_random_uuid(), '阿里巴巴', 'https://talent.alibaba.com', '互联网', 'bigtech', '电商和云计算集团', true, 'GREEN'),
@@ -86,6 +89,7 @@ INSERT INTO companies (id, name, website, industry, "group", description, is_pre
 (gen_random_uuid(), '华为', 'https://career.huawei.com', '科技', 'bigtech', 'ICT基础设施', true, 'GREEN'),
 (gen_random_uuid(), '荣耀', 'https://career.honor.com', '智能硬件', 'bigtech', '智能手机品牌', true, 'GREEN');
 EOF
+fi
 
 # 检查导入结果
 NEW_COUNT=$(kubectl exec $PG_POD -- psql -U postgres -d jobtracker -t -c "SELECT COUNT(*) FROM companies;" 2>/dev/null | tr -d ' ')

@@ -68,6 +68,7 @@ else
 fi
 
 kubectl wait --for=condition=Ready pod -l component=database --timeout=120s || true
+kubectl wait --for=condition=Ready pod -n kube-system -l k8s-app=kube-dns --timeout=120s || true
 sleep 15
 kubectl apply -f infra/k8s/base/backend.yaml
 kubectl apply -f infra/k8s/base/frontend.yaml
