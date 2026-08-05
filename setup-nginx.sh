@@ -17,25 +17,27 @@ server {
     listen 80;
     server_name _;
 
-    # 前端
+    # 前端（k3s NodePort）
     location / {
-        proxy_pass http://127.0.0.1:5173;
+        proxy_pass http://127.0.0.1:30080;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # 后端 API
+    # 后端 API（k3s NodePort）
     location /api/ {
-        proxy_pass http://127.0.0.1:8080;
+        proxy_pass http://127.0.0.1:30081;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 
     # Grafana
     location /grafana/ {
-        proxy_pass http://127.0.0.1:3000/;
+        proxy_pass http://127.0.0.1:30300/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -44,7 +46,7 @@ server {
 
     # Grafana WebSocket
     location /grafana/api/live/ {
-        proxy_pass http://127.0.0.1:3000/;
+        proxy_pass http://127.0.0.1:30300/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -77,6 +79,10 @@ ufw deny 3000/tcp
 ufw deny 9090/tcp
 ufw deny 5432/tcp
 ufw deny 6379/tcp
+ufw deny 30080/tcp
+ufw deny 30081/tcp
+ufw deny 30300/tcp
+ufw deny 30090/tcp
 ufw --force enable
 
 echo ""
@@ -86,5 +92,5 @@ echo "  前端: http://服务器IP/"
 echo "  API:  http://服务器IP/api/"
 echo "  监控: http://服务器IP/grafana/"
 echo ""
-echo "已关闭的端口: 5173, 8080, 3000, 9090, 5432, 6379"
+echo "已关闭的端口: 5173, 8080, 3000, 9090, 5432, 6379, 30080, 30081, 30300, 30090"
 echo "警告: 不要把 PostgreSQL/Redis 端口暴露到公网，否则可能被扫描脚本攻击"

@@ -59,7 +59,6 @@ sleep 15
 kubectl apply -f infra/k8s/base/backend.yaml
 kubectl apply -f infra/k8s/base/frontend.yaml
 kubectl apply -f infra/k8s/base/hpa.yaml
-kubectl apply -f infra/k8s/base/ingress.yaml
 
 kubectl rollout status deployment/jobtracker-backend --timeout=120s || true
 
@@ -73,9 +72,11 @@ echo "=========================================="
 echo "  Deploy Complete!"
 echo "=========================================="
 echo ""
-echo "Access URLs:"
-echo "  Frontend: http://101.35.246.75:8080"
-echo "  Grafana:  http://101.35.246.75:30300"
+echo "Next steps:"
+echo "  1. bash scripts/seed-data.sh"
+echo "  2. sudo bash setup-nginx.sh"
 echo ""
-echo "After deployment, run seed script:"
-echo "  bash scripts/seed-data.sh"
+echo "After that, only port 80 is exposed:"
+echo "  Frontend: http://<server-ip>/"
+echo "  API:      http://<server-ip>/api/"
+echo "  Grafana:  http://<server-ip>/grafana/"

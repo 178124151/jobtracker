@@ -26,100 +26,95 @@
 | 数据库 | PostgreSQL 16 |
 | 缓存 | Redis 7.2 |
 | 监控 | Prometheus + Grafana + Node Exporter |
-| 部署 | Docker Compose / Kubernetes (k3s) |
+| 生产部署 | Kubernetes (k3s) + 宿主机 Nginx |
+| 本地开发 | Docker Compose（可选） |
 
-## 快速开始（Docker）
+## 生产部署（k3s，只暴露 80 端口）
 
-```bash
-# 克隆项目
-git clone https://github.com/yourusername/jobtracker.git
-cd jobtracker
+生产环境统一使用 k3s 容器，不依赖 Docker Compose 提供服务。外部请求统一从宿主机 Nginx 的 80 端口进入：
 
-# 复制环境变量并修改口令
-cp .env.example .env
-vim .env
-
-# 构建并启动
-./build.sh
-
-# 访问
-# 前端: http://localhost:5173
-# API: http://localhost:8080
-# Grafana: http://localhost:3000
+```text
+浏览器
+  └─ :80 宿主机 Nginx
+       ├─ /        -> frontend NodePort 30080  -> 前端静态页 + SPA 路由
+       ├─ /api/    -> backend  NodePort 30081  -> Go API
+       └─ /grafana -> grafana NodePort 30300   -> 监控大盘
 ```
 
-`docker-compose.yml` 中的默认口令来自 `.env`，未设置时会使用 `.env.example` 里的随机默认值。**生产环境部署前请务必替换 `DB_PASSWORD`、`POSTGRES_PASSWORD`、`JWT_SECRET` 和 `GRAFANA_PASSWORD`。**
+1. 初始化 k3s（不需要 Ingress Controller，宿主机 Nginx 负责转发）：
 
-PostgreSQL 端口已只绑定 `127.0.0.1:5432`，不要把它改成 `0.0.0.0:5432` 或直接暴露到公网。
+```bash
+cd /opt/jobtracker
+sudo bash scripts/setup-k3s.sh
+```
+
+2. 构建镜像并部署全部 K8s 资源：
+
+```bash
+bash scripts/deploy-k8s.sh
+```
+
+3. 初始化数据库和种子数据：
+
+```bash
+bash scripts/seed-data.sh
+```
+
+4. 配置宿主机 Nginx + UFW，只开放 22 和 80：
+
+```bash
+sudo bash setup-nginx.sh
+```
+
+之后访问：
+
+```text
+前端:   http://<服务器IP>/
+API:    http://<服务器IP>/api/
+Grafana: http://<服务器IP>/grafana/
+```
+
+K8s 里的 NodePort（30080/30081/30300/30090）以及 PostgreSQL/Redis 端口都会被 UFW 拒绝公网访问，只允许从宿主机本机转发。
 
 ## 安全注意事项
 
-- 永远不要把 PostgreSQL（5432）、Redis（6379）端口暴露到公网。
+- 不要暴露 PostgreSQL（5432）、Redis（6379）以及任何 NodePort 到公网。
 - 不要在服务器上执行 `kubectl port-forward --address 0.0.0.0 ... 5432:5432` 这类命令。
 - 如果数据库里出现名为 `readme_to_recover` 的库，说明 PostgreSQL 已被公网扫描脚本攻击：立即关闭 5432 公网入口、更换数据库口令和后端 JWT Secret、从备份恢复数据，并按“已入侵”检查集群和宿主机。
 - 数据目录 `data/` 属于私有数据，不会被提交到 Git；请定期备份数据库。
 
 ## 项目结构
 
-```
+```text
 jobtracker/
 ├── frontend/          # Vue 3 前端应用
 ├── backend/           # Go 后端 API
-├── infra/             # 基础设施配置（Nginx / Prometheus / Grafana / K8s）
+├── infra/             # Nginx / Prometheus / Grafana / K8s 配置
 ├── scripts/           # k3s 部署、种子数据等脚本
 ├── data/              # 私有数据（不入库）
-├── docker-compose.yml
-├── build.sh           # 构建并启动（不删除数据卷）
-├── deploy.sh          # Docker 更新部署
-├── setup-nginx.sh     # Nginx + UFW 防火墙配置
+├── docker-compose.yml # 仅本地开发
+├── setup-nginx.sh     # 宿主机 Nginx + UFW（只开放 80）
 └── README.md
 ```
 
-## 部署
-
-### Docker 部署
+## 本地开发（Docker，可选）
 
 ```bash
-cd /opt/jobtracker
+git clone https://github.com/yourusername/jobtracker.git
+cd jobtracker
+
 cp .env.example .env
 vim .env
-
-# 首次构建
 ./build.sh
 
-# 日常更新（拉取代码 + 重新构建）
-./deploy.sh
+# 前端: http://localhost:5173
+# API: http://localhost:8080
+# Grafana: http://localhost:3000
 ```
 
-`build.sh` 不会删除数据卷，日常重建不会丢数据。只有确实需要完全重置时才手动执行 `docker compose down -v`。
-
-### Kubernetes / k3s 部署
-
-```bash
-cd /opt/jobtracker
-bash scripts/deploy-k8s.sh
-```
-
-脚本会拉取最新代码、构建并导入镜像到 k3s、更新 `sme-data` ConfigMap，然后应用 K8s 清单。首次部署或数据库被清空后，需要初始化数据：
-
-```bash
-bash scripts/seed-data.sh
-```
-
-`seed-data.sh` 会：
-1. 确保 `jobtracker` 数据库和表结构存在；
-2. 在 `companies` 表为空时导入公司数据；
-3. 把 `data/sme_companies.json` 写入 `sme-data` ConfigMap 并滚动重启后端，避免数据随 Pod 重启丢失。
-
-K8s 环境下建议给 PostgreSQL 配置 PVC，并保留 `POSTGRES_DB`、`POSTGRES_USER`、`POSTGRES_PASSWORD` 环境变量，否则 Pod 重建会丢失全部数据。
+`docker-compose.yml` 的默认口令来自 `.env`，未设置时使用 `.env.example` 里的随机默认值。生产部署前请务必替换 `DB_PASSWORD`、`POSTGRES_PASSWORD`、`JWT_SECRET` 和 `GRAFANA_PASSWORD`。
 
 ## 数据备份
-
-Docker 部署：
-
-```bash
-docker exec -i jobtracker-postgres-1 pg_dump -U postgres -d jobtracker > backup.sql
-```
 
 K8s 部署：
 
