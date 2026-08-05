@@ -15,6 +15,18 @@ if ! sudo k3s ctr images list | grep -q "rancher/mirrored-pause:3.6"; then
     rm -f /tmp/pause.tar
 fi
 
+# 导入 kube-system 缺少的系统镜像（coredns / metrics-server / local-path-provisioner）
+SYSTEM_IMAGES=$(sudo kubectl get deployment -n kube-system -o jsonpath='{range .items[*]}{.spec.template.spec.containers[*].image}{"\n"}{end}' 2>/dev/null || true)
+for img in $(echo "$SYSTEM_IMAGES" | sort -u); do
+    if [ -n "$img" ] && ! sudo k3s ctr images list | grep -q "$img"; then
+        echo "Importing system image $img ..."
+        sudo docker pull "$img" || { echo "Warning: failed to pull $img"; continue; }
+        sudo docker save "$img" -o /tmp/k3s-sys.tar
+        sudo k3s ctr images import /tmp/k3s-sys.tar
+        rm -f /tmp/k3s-sys.tar
+    fi
+done
+
 echo "=========================================="
 echo "  JobTracker K8s Deploy"
 echo "=========================================="
