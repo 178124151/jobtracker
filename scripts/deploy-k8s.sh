@@ -2,6 +2,11 @@
 # JobTracker K8s Deploy Script
 set -e
 
+if ! command -v k3s >/dev/null 2>&1; then
+    echo "ERROR: k3s not found. Please run 'sudo bash scripts/setup-k3s.sh' first."
+    exit 1
+fi
+
 echo "=========================================="
 echo "  JobTracker K8s Deploy"
 echo "=========================================="
