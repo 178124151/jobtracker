@@ -21,7 +21,7 @@ echo "=========================================="
 
 cd /opt/jobtracker
 
-git pull origin main
+# 使用当前本地代码构建；需要更新代码时请手动执行 git pull origin main
 
 # 1. 拉取镜像
 echo "[1/6] Pulling images..."
