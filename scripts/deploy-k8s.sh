@@ -91,7 +91,12 @@ kubectl apply -f infra/k8s/base/backend.yaml
 kubectl apply -f infra/k8s/base/frontend.yaml
 kubectl apply -f infra/k8s/base/hpa.yaml
 
+# 重新导入的镜像标签相同，强制滚动重启以使用新镜像
+kubectl rollout restart deployment/jobtracker-backend
+kubectl rollout restart deployment/jobtracker-frontend
+
 kubectl rollout status deployment/jobtracker-backend --timeout=120s || true
+kubectl rollout status deployment/jobtracker-frontend --timeout=120s || true
 
 # 6. 等待启动
 echo "[6/6] Waiting for pods..."
