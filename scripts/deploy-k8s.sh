@@ -12,7 +12,7 @@ if ! sudo k3s ctr images list | grep -q "rancher/mirrored-pause:3.6"; then
     sudo docker pull rancher/mirrored-pause:3.6
     sudo docker save rancher/mirrored-pause:3.6 -o /tmp/pause.tar
     sudo k3s ctr images import /tmp/pause.tar
-    rm -f /tmp/pause.tar
+    rm -f /tmp/pause.tar 2>/dev/null || true
 fi
 
 # 导入 kube-system 缺少的系统镜像（coredns / metrics-server / local-path-provisioner）
@@ -23,7 +23,7 @@ for img in $(echo "$SYSTEM_IMAGES" | sort -u); do
         sudo docker pull "$img" || { echo "Warning: failed to pull $img"; continue; }
         sudo docker save "$img" -o /tmp/k3s-sys.tar
         sudo k3s ctr images import /tmp/k3s-sys.tar
-        rm -f /tmp/k3s-sys.tar
+        rm -f /tmp/k3s-sys.tar 2>/dev/null || true
     fi
 done
 
@@ -62,8 +62,8 @@ sudo k3s ctr images import /tmp/grafana.tar
 sudo k3s ctr images import /tmp/backend.tar
 sudo k3s ctr images import /tmp/frontend.tar
 
-# 清理临时文件
-rm -f /tmp/postgres.tar /tmp/redis.tar /tmp/grafana.tar /tmp/backend.tar /tmp/frontend.tar
+# 清理临时文件（失败不阻塞部署）
+rm -f /tmp/postgres.tar /tmp/redis.tar /tmp/grafana.tar /tmp/backend.tar /tmp/frontend.tar 2>/dev/null || true
 
 # 5. 部署到 K8s
 echo "[5/6] Deploying to K8s..."
