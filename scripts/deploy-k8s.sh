@@ -7,6 +7,11 @@ if ! command -v k3s >/dev/null 2>&1; then
     exit 1
 fi
 
+if ! kubectl get ns >/dev/null 2>&1; then
+    echo "ERROR: kubectl cannot access the cluster. Fix ~/.kube/config or run 'sudo bash scripts/setup-k3s.sh'."
+    exit 1
+fi
+
 if ! sudo k3s ctr images list | grep -q "rancher/mirrored-pause:3.6"; then
     echo "Importing pause image..."
     sudo docker pull rancher/mirrored-pause:3.6

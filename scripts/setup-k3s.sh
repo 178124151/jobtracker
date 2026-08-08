@@ -14,9 +14,16 @@ curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | INSTALL_K3S_MIR
 
 # 2. 配置 kubectl
 echo "[2/4] 配置 kubectl..."
-mkdir -p ~/.kube
-cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
-chmod 600 ~/.kube/config
+KUBE_USER="${SUDO_USER:-$(whoami)}"
+if [ "$KUBE_USER" = "root" ]; then
+    KUBE_HOME=/root
+else
+    KUBE_HOME="/home/$KUBE_USER"
+fi
+mkdir -p "$KUBE_HOME/.kube"
+cp /etc/rancher/k3s/k3s.yaml "$KUBE_HOME/.kube/config"
+chown -R "$KUBE_USER":"$KUBE_USER" "$KUBE_HOME/.kube"
+chmod 600 "$KUBE_HOME/.kube/config"
 
 # 3. 安装 kubectl（如果没有）
 if ! command -v kubectl &> /dev/null; then
