@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 
-const grafanaBaseUrl = computed(() => {
-  const host = window.location.hostname
-  return `http://${host}:30300`
-})
+const grafanaBaseUrl = computed(() => window.location.origin)
 
 const dashboardUid = 'server-monitoring'
 
@@ -15,7 +12,7 @@ const panels = ref([
 ])
 
 const getGrafanaUrl = (panelId: number) => {
-  return `${grafanaBaseUrl.value}/d-solo/${dashboardUid}/server-monitoring?orgId=1&panelId=${panelId}&theme=light&kiosk`
+  return `${grafanaBaseUrl.value}/grafana/d-solo/${dashboardUid}/server-monitoring?orgId=1&panelId=${panelId}&theme=light&kiosk`
 }
 
 const metrics = ref({
@@ -51,7 +48,7 @@ onMounted(() => {
     <div class="page-header">
       <h2>Link Monitoring</h2>
       <div class="header-links">
-        <a :href="grafanaBaseUrl" target="_blank" class="grafana-link">Open Grafana Panel</a>
+        <a :href="`${grafanaBaseUrl}/grafana/`" target="_blank" class="grafana-link">Open Grafana Panel</a>
       </div>
     </div>
 
@@ -86,7 +83,7 @@ onMounted(() => {
           <div class="panel-header">
             <span class="panel-title">{{ panel.title }}</span>
             <a
-              :href="`${grafanaBaseUrl}/d/${dashboardUid}?orgId=1&viewPanel=${panel.id}`"
+              :href="`${grafanaBaseUrl}/grafana/d/${dashboardUid}?orgId=1&viewPanel=${panel.id}`"
               target="_blank"
               class="panel-expand"
             >&#8599;</a>
