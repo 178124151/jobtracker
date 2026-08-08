@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"log/slog"
 	"sync"
 	"time"
@@ -18,7 +19,7 @@ type HealthCheckService struct {
 func NewHealthCheckService(companyRepo *repository.CompanyRepository) *HealthCheckService {
 	return &HealthCheckService{
 		companyRepo: companyRepo,
-		client:      utils.NewHTTPClient(15*time.Second, 2), // 15s超时，重试2次
+		client:      utils.NewHTTPClient(20*time.Second, 2), // 20s超时，重试2次
 	}
 }
 
@@ -58,7 +59,12 @@ func (s *HealthCheckService) checkCompany(company *model.Company) {
 			"website", company.Website,
 			"error", err,
 		)
-		company.HealthStatus = "RED"
+		var timeoutErr *utils.TimeoutError
+		if errors.As(err, &timeoutErr) {
+			company.HealthStatus = "YELLOW"
+		} else {
+			company.HealthStatus = "RED"
+		}
 		company.LastChecked = &now
 		s.companyRepo.Update(company)
 		return
