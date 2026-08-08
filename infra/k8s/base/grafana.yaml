@@ -72,9 +72,9 @@ spec:
             name: grafana-provisioning
             items:
               - key: datasources.yaml
-                path: datasources.yaml
+                path: datasources/prometheus.yml
               - key: dashboards.yaml
-                path: dashboards.yaml
+                path: dashboards/dashboards.yaml
               - key: server-monitoring.json
                 path: dashboards/server-monitoring.json
 ---
