@@ -50,6 +50,10 @@ pgdata/
 redis/
 prometheus/
 grafana/
+!infra/prometheus/
+!infra/prometheus/**
+!infra/grafana/
+!infra/grafana/**
 
 # ============ Temporary Files ============
 tmp/

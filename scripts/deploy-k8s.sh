@@ -77,6 +77,13 @@ kubectl apply -f infra/k8s/base/postgres.yaml
 kubectl apply -f infra/k8s/base/redis.yaml
 kubectl apply -f infra/k8s/base/grafana.yaml
 
+# 把本地 provisioning（datasource + dashboard）同步到 Grafana ConfigMap
+kubectl create configmap grafana-provisioning \
+    --from-file=datasources.yaml=infra/grafana/provisioning/datasources/prometheus.yml \
+    --from-file=dashboards.yaml=infra/grafana/provisioning/dashboards/dashboards.yml \
+    --from-file=dashboards/server-monitoring.json=infra/grafana/provisioning/dashboards/server-monitoring.json \
+    --dry-run=client -o yaml | kubectl apply --server-side --force-conflicts -f - || echo "Warning: failed to update grafana-provisioning ConfigMap"
+
 # 更新 SME 数据 ConfigMap（数据文件不入库）
 if [ -f data/sme_companies.json ]; then
   kubectl create configmap sme-data --from-file=data/sme_companies.json --dry-run=client -o yaml | kubectl apply --server-side --force-conflicts -f - || echo "Warning: failed to update sme-data ConfigMap"
@@ -94,6 +101,7 @@ kubectl apply -f infra/k8s/base/hpa.yaml
 # 重新导入的镜像标签相同，强制滚动重启以使用新镜像
 kubectl rollout restart deployment/jobtracker-backend
 kubectl rollout restart deployment/jobtracker-frontend
+kubectl rollout restart deployment/grafana
 
 kubectl rollout status deployment/jobtracker-backend --timeout=120s || true
 kubectl rollout status deployment/jobtracker-frontend --timeout=120s || true

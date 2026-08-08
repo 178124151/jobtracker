@@ -8,7 +8,7 @@ const dashboardUid = 'server-monitoring'
 const panels = ref([
   { id: 1, title: 'CPU Usage', type: 'gauge', height: '300px' },
   { id: 2, title: 'Memory Usage', type: 'gauge', height: '300px' },
-  { id: 3, title: 'CPU Trend', type: 'timeseries', height: '400px' }
+  { id: 11, title: 'CPU Trend', type: 'timeseries', height: '400px' }
 ])
 
 const getGrafanaUrl = (panelId: number) => {
