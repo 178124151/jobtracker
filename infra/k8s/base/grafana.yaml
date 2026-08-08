@@ -70,6 +70,13 @@ spec:
         - name: grafana-provisioning
           configMap:
             name: grafana-provisioning
+            items:
+              - key: datasources.yaml
+                path: datasources.yaml
+              - key: dashboards.yaml
+                path: dashboards.yaml
+              - key: server-monitoring.json
+                path: dashboards/server-monitoring.json
 ---
 apiVersion: v1
 kind: Service

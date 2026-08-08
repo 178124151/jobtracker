@@ -81,7 +81,7 @@ kubectl apply -f infra/k8s/base/grafana.yaml
 kubectl create configmap grafana-provisioning \
     --from-file=datasources.yaml=infra/grafana/provisioning/datasources/prometheus.yml \
     --from-file=dashboards.yaml=infra/grafana/provisioning/dashboards/dashboards.yml \
-    --from-file=dashboards/server-monitoring.json=infra/grafana/provisioning/dashboards/server-monitoring.json \
+    --from-file=server-monitoring.json=infra/grafana/provisioning/dashboards/server-monitoring.json \
     --dry-run=client -o yaml | kubectl apply --server-side --force-conflicts -f - || echo "Warning: failed to update grafana-provisioning ConfigMap"
 
 # 更新 SME 数据 ConfigMap（数据文件不入库）
