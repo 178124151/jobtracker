@@ -19,6 +19,9 @@ func NewHTTPClient(timeout time.Duration, retries int) *HTTPClient {
 	return &HTTPClient{
 		client: &http.Client{
 			Timeout: timeout,
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
 			Transport: &http.Transport{
 				MaxIdleConns:        100,
 				MaxIdleConnsPerHost: 10,
@@ -49,11 +52,10 @@ func (h *HTTPClient) Get(url string) (int, []byte, error) {
 			time.Sleep(time.Duration(i+1) * time.Second) // 指数退避
 			continue
 		}
-		defer resp.Body.Close()
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			lastErr = err
+		body, readErr := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if readErr != nil {
+			lastErr = readErr
 			continue
 		}
 

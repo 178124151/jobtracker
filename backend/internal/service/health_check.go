@@ -18,7 +18,7 @@ type HealthCheckService struct {
 func NewHealthCheckService(companyRepo *repository.CompanyRepository) *HealthCheckService {
 	return &HealthCheckService{
 		companyRepo: companyRepo,
-		client:      utils.NewHTTPClient(10*time.Second, 2), // 10s超时，重试2次
+		client:      utils.NewHTTPClient(15*time.Second, 2), // 15s超时，重试2次
 	}
 }
 
