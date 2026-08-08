@@ -45,6 +45,8 @@ echo "[1/6] Pulling images..."
 sudo docker pull postgres:16-alpine
 sudo docker pull redis:7.2-alpine
 sudo docker pull grafana/grafana:latest
+sudo docker pull prom/prometheus:latest
+sudo docker pull prom/node-exporter:latest
 
 # 2. 构建应用镜像
 echo "[2/6] Building application images... (first build may take a few minutes)"
@@ -56,6 +58,8 @@ echo "[3/6] Saving images..."
 sudo docker save -o /tmp/postgres.tar postgres:16-alpine
 sudo docker save -o /tmp/redis.tar redis:7.2-alpine
 sudo docker save -o /tmp/grafana.tar grafana/grafana:latest
+sudo docker save -o /tmp/prometheus.tar prom/prometheus:latest
+sudo docker save -o /tmp/node-exporter.tar prom/node-exporter:latest
 sudo docker save -o /tmp/backend.tar jobtracker-backend:latest
 sudo docker save -o /tmp/frontend.tar jobtracker-frontend:latest
 
@@ -64,11 +68,13 @@ echo "[4/6] Importing images to k3s..."
 sudo k3s ctr images import /tmp/postgres.tar
 sudo k3s ctr images import /tmp/redis.tar
 sudo k3s ctr images import /tmp/grafana.tar
+sudo k3s ctr images import /tmp/prometheus.tar
+sudo k3s ctr images import /tmp/node-exporter.tar
 sudo k3s ctr images import /tmp/backend.tar
 sudo k3s ctr images import /tmp/frontend.tar
 
 # 清理临时文件（失败不阻塞部署）
-rm -f /tmp/postgres.tar /tmp/redis.tar /tmp/grafana.tar /tmp/backend.tar /tmp/frontend.tar 2>/dev/null || true
+rm -f /tmp/postgres.tar /tmp/redis.tar /tmp/grafana.tar /tmp/prometheus.tar /tmp/node-exporter.tar /tmp/backend.tar /tmp/frontend.tar 2>/dev/null || true
 
 # 5. 部署到 K8s
 echo "[5/6] Deploying to K8s..."
@@ -83,6 +89,14 @@ kubectl create configmap grafana-provisioning \
     --from-file=dashboards.yaml=infra/grafana/provisioning/dashboards/dashboards.yml \
     --from-file=server-monitoring.json=infra/grafana/provisioning/dashboards/server-monitoring.json \
     --dry-run=client -o yaml | kubectl apply --server-side --force-conflicts -f - || echo "Warning: failed to update grafana-provisioning ConfigMap"
+
+# 同步 Prometheus 配置并部署监控组件
+kubectl create configmap prometheus-config \
+    --from-file=prometheus.yml=infra/prometheus/prometheus.yml \
+    --from-file=alert-rules.yml=infra/prometheus/alert-rules.yml \
+    --dry-run=client -o yaml | kubectl apply --server-side --force-conflicts -f - || echo "Warning: failed to update prometheus-config ConfigMap"
+kubectl apply -f infra/k8s/base/prometheus.yaml
+kubectl apply -f infra/k8s/base/node-exporter.yaml
 
 # 更新 SME 数据 ConfigMap（数据文件不入库）
 if [ -f data/sme_companies.json ]; then
@@ -102,9 +116,11 @@ kubectl apply -f infra/k8s/base/hpa.yaml
 kubectl rollout restart deployment/jobtracker-backend
 kubectl rollout restart deployment/jobtracker-frontend
 kubectl rollout restart deployment/grafana
+kubectl rollout restart deployment/prometheus
 
 kubectl rollout status deployment/jobtracker-backend --timeout=120s || true
 kubectl rollout status deployment/jobtracker-frontend --timeout=120s || true
+kubectl rollout status deployment/prometheus --timeout=120s || true
 
 # 6. 等待启动
 echo "[6/6] Waiting for pods..."

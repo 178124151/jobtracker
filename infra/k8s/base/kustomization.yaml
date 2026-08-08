@@ -6,6 +6,8 @@ resources:
   - postgres.yaml
   - redis.yaml
   - grafana.yaml
+  - prometheus.yaml
+  - node-exporter.yaml
   - backend.yaml
   - frontend.yaml
   - hpa.yaml

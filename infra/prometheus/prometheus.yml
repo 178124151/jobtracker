@@ -18,7 +18,7 @@ scrape_configs:
   # JobTracker后端 - 应用指标
   - job_name: 'jobtracker-backend'
     static_configs:
-      - targets: ['backend:8080']
+      - targets: ['backend-service:8080']
     metrics_path: '/api/v1/sre/prometheus'
     scrape_interval: 30s
 
